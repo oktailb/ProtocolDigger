@@ -8,6 +8,7 @@ to visual physical values interpretation
 
 With the possibility to:
  - Change data interpretation type
- - Set data size (8, 16, 32, 64 or custom for strings
+ - Set data size (8, 16, 32, 64) or custom for strings
  - Set mask, shift and conversion ratio
- - Use bookmarks fro configuration file
+ - Use bookmarks from/to configuration file
+ - specify endianity 
