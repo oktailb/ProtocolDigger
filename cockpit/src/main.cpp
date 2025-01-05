@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     Instruments i(configuration, std::ref(queue));
 
     i.show();
+    i.play();
 
     return a.exec();
 }
