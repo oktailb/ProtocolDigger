@@ -82,11 +82,13 @@ ttype ntoh(ttype val)
     return ret;
 }
 
+
+
 int main(int argc, char *argv[])
 {
-    std::map<std::string, std::string> configuration = readConfiguration(argv[1]);
-    std::map<std::string, varDef_t> variables;
-    extractVariablesFromConfiguration(configuration, variables);
+    std::map<std::string, std::string> configuration;
+
+    configuration = readConfiguration(argv[1]);
 
     std::string pcap_file = configuration["Input/file"];
     std::string pcap_device = configuration["Input/device"];
@@ -107,7 +109,7 @@ int main(int argc, char *argv[])
     }
 
     QApplication a(argc, argv);
-    DebugWindow w(variables, queue);
+    DebugWindow w(configuration, queue);
     Instruments i;
 
     w.show();

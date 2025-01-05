@@ -2,19 +2,22 @@
 #include "./ui_mainwindow.h"
 #include "pCapUtils.h"
 #include "variables.h"
+#include "configuration.h"
 #include <stdint.h>
 #include <stdfloat>
 #include <QChart>
 #include <QLineSeries>
 #include <netinet/in.h>
 
-DebugWindow::DebugWindow(std::map<std::string, varDef_t> &variables, ThreadSafeQueue &queue, QWidget *parent)
+DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, ThreadSafeQueue &queue, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::DebugWindow)
-    , variables(variables)
+    , configuration(configuration)
     , queue(queue.data())
     , timerId(0)
 {
+    extractVariablesFromConfiguration(configuration, variables);
+
     ui->setupUi(this);
     fillVariables(variables);
     timerId = startTimer(20);
@@ -294,5 +297,34 @@ void DebugWindow::on_ratio_valueChanged(double ratio)
     variables[name].ratio = ratio;
 
     updateChart(name, offset, size, type, toHostEndian, mask, shift, ratio);
+}
+
+
+void DebugWindow::on_applyButton_clicked()
+{
+    std::string name = ui->variables->currentText().toStdString();
+    DataSize size = variables[name].size;
+    uint32_t offset = variables[name].offset;
+    DataType type = variables[name].type;
+    Qt::CheckState endian = (variables[name].endian == DataEndian::e_host)?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
+    bool toHostEndian = (variables[name].endian == DataEndian::e_host)?true:false;
+    uint64_t mask = variables[name].mask;
+    uint8_t shift = variables[name].shift;
+    double ratio = variables[name].ratio;
+
+    QString out = "";
+
+    out += "0x" + QString::number(offset, 16) + ",";
+    out += intDataType.at(type) + ",";
+    out += intDataSize.at(size) + ",";
+    if (type != DataType::e_string)
+    {
+        out += QString(toHostEndian?"host":"network") + ",";
+        out += "0x" + QString::number(mask, 16) + ",";
+        out += QString::number(shift) + ",";
+        out += QString::number(ratio) + ",";
+    }
+    configuration["Vars/" + name] = out.toStdString();
+    saveConfiguration(configuration, "config.ini");
 }
 
