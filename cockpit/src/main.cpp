@@ -1,4 +1,4 @@
-#include "include/mainwindow.h"
+#include "include/instruments.h"
 #include "configuration.h"
 
 #include <string>
@@ -34,9 +34,9 @@ int main(int argc, char *argv[])
     }
 
     QApplication a(argc, argv);
-    DebugWindow w(configuration, queue);
+    Instruments i(configuration, std::ref(queue));
 
-    w.show();
+    i.show();
 
     return a.exec();
 }

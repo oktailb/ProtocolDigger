@@ -19,7 +19,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 add_subdirectory(lib)
 add_subdirectory(capturer)
 add_subdirectory(drawer)
-#add_subdirectory(debugger)
+add_subdirectory(cockpit)
 
 add_custom_target(config_file
     SOURCES config.ini)

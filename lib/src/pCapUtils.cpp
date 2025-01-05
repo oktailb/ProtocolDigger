@@ -66,6 +66,60 @@ void read_pcap_file(const std::string& file_name, const std::string& filter_exp,
     pcap_close(handle);
 }
 
+void read_device(const std::string& device, const std::string& filter_exp, ThreadSafeQueue& queue)
+{
+    char errbuf[PCAP_ERRBUF_SIZE];
+
+    pcap_if_t *interfaces;
+
+#ifdef __WIN32__
+    if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &interfaces, pcapError) < 0)
+#else
+    if (pcap_findalldevs(&interfaces, errbuf) < 0)
+#endif
+    {
+    }
+    else
+    {
+        std::string message;
+        pcap_if_t *interfacesIt = interfaces;
+        message += "Network Interfaces:\n";
+        while (interfacesIt)
+        {
+            message += " - " + std::string(interfacesIt->name) + " ====> " + interfacesIt->description + (device.compare(interfacesIt->name) == 0?" *":"") + "\n";
+            interfacesIt = interfacesIt->next;
+        }
+        std::cerr << message << std::endl;
+    }
+
+    pcap_t* handle = pcap_open_live(device.c_str(),8192, 1, 20, errbuf);
+    if (!handle) {
+        std::cerr << "Could not open device: " << errbuf << std::endl;
+        return;
+    }
+
+    bpf_program filter;
+    if (pcap_compile(handle, &filter, filter_exp.c_str(), 0, PCAP_NETMASK_UNKNOWN) == -1) {
+        std::cerr << "Could not parse filter: " << pcap_geterr(handle) << std::endl;
+        pcap_close(handle);
+        return;
+    }
+
+    if (pcap_setfilter(handle, &filter) == -1) {
+        std::cerr << "Could not apply filter: " << pcap_geterr(handle) << std::endl;
+        pcap_close(handle);
+        return;
+    }
+
+    const uint8_t* packet;
+    struct pcap_pkthdr header;
+
+    pcap_loop(handle, -1, pcapCallback, (uint8_t *)(&queue));
+
+    pcap_close(handle);
+}
+
+
 std::string printIP(uint32_t val)
 {
     std::string res = "";

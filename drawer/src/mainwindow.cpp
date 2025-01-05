@@ -9,6 +9,35 @@
 #include <QLineSeries>
 #include <netinet/in.h>
 
+long double mylog2(long double number ) {
+    return log( number ) / log( 2 ) ;
+}
+
+template <typename T> double entropy(std::vector<T> data)
+{
+    std::map<T , int> frequencies ;
+    for ( auto value : data )
+        frequencies[ value ] ++ ;
+    int numlen = data.size();
+    double infocontent = 0 ;
+    for ( std::pair<T , int> p : frequencies ) {
+        double freq = static_cast<double>( p.second ) / numlen ;
+        infocontent += freq * mylog2( freq ) ;
+    }
+    infocontent *= -1 ;
+
+    return infocontent;
+}
+
+template <typename T> uint32_t diversity(std::vector<T> data)
+{
+    std::map<T , int> frequencies ;
+    for ( auto value : data )
+        frequencies[ value ] ++ ;
+
+    return frequencies.size();
+}
+
 DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, ThreadSafeQueue &queue, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::DebugWindow)
@@ -147,8 +176,10 @@ QLineSeries * DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, Data
             break;
         }
     }
+
     return series;
 }
+
 void DebugWindow::updateChart(std::string name,
                               uint32_t offset,
                               DataSize size,
