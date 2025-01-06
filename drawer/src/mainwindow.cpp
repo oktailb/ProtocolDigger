@@ -196,6 +196,14 @@ void DebugWindow::updateChart(std::string name,
     chart->createDefaultAxes();
     chart->setTitle(name.c_str());
 
+    ui->variables->setCurrentText(name.c_str());
+    ui->offset->setValue(offset);
+    ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
+    ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
+    ui->endian->setCheckState(toHostEndian?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
+    ui->mask->setText(QString::number(mask, 16));
+    ui->shift->setValue(shift);
+    ui->ratio->setValue(ratio);
     ui->chart->setChart(chart);
 }
 
@@ -211,13 +219,13 @@ void DebugWindow::on_variables_currentIndexChanged(int index)
     uint8_t shift = variables[name].shift;
     double ratio = variables[name].ratio;
 
-    ui->offset->setValue(offset);
-    ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
-    ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
-    ui->endian->setCheckState(endian);
-    ui->mask->setText(QString::number(mask, 16));
-    ui->shift->setValue(shift);
-    ui->ratio->setValue(ratio);
+    // ui->offset->setValue(offset);
+    // ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
+    // ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
+    // ui->endian->setCheckState(endian);
+    // ui->mask->setText(QString::number(mask, 16));
+    // ui->shift->setValue(shift);
+    // ui->ratio->setValue(ratio);
 
     updateChart(name, offset, size, type, toHostEndian, mask, shift, ratio);
 }
@@ -225,6 +233,11 @@ void DebugWindow::on_variables_currentIndexChanged(int index)
 void DebugWindow::on_offset_valueChanged(int offset)
 {
     std::string name = ui->variables->currentText().toStdString();
+    if (findByOffset(offset, variables).length() != 0)
+        name = findByOffset(offset, variables);
+    else
+        name = "new ...";
+
     DataSize size = variables[name].size;
     variables[name].offset = offset;
     DataType type = variables[name].type;
@@ -373,7 +386,6 @@ void DebugWindow::on_variables_editTextChanged(const QString &name)
 
     if (variables.find(name.toStdString()) != variables.end())
     {
-
         size = variables[name.toStdString()].size;
         offset = variables[name.toStdString()].offset;
         type = variables[name.toStdString()].type;
@@ -383,13 +395,6 @@ void DebugWindow::on_variables_editTextChanged(const QString &name)
         shift = variables[name.toStdString()].shift;
         ratio = variables[name.toStdString()].ratio;
 
-        ui->offset->setValue(offset);
-        ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
-        ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
-        ui->endian->setCheckState(endian);
-        ui->mask->setText(QString::number(mask, 16));
-        ui->shift->setValue(shift);
-        ui->ratio->setValue(ratio);
         updateChart(name.toStdString(), offset, size, type, toHostEndian, mask, shift, ratio);
     }
 }

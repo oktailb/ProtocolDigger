@@ -69,7 +69,9 @@ void Instruments::play()
                 ui->ALT->setAltitude(extractVarFromData<double>(data, variables["altitude"]));
                 ui->EADI->setPitch(extractVarFromData<double>(data, variables["pitch"]));
                 ui->EADI->setRoll(extractVarFromData<double>(data, variables["roll"]));
-
+                ui->EADI->setAirspeed(extractVarFromData<double>(data, variables["speed"]));
+                ui->EADI->setTurnRate(extractVarFromData<double>(data, variables["engineTorque"]));
+                //ui->VSI->setClimbRate()
                 usleep(timestamp - timestamp0);
                 timestamp0 = timestamp;
             }
