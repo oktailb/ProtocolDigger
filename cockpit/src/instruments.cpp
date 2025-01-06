@@ -67,6 +67,8 @@ void Instruments::play()
             {
                 ui->EADI->setAltitude(extractVarFromData<double>(data, variables["altitude"]));
                 ui->ALT->setAltitude(extractVarFromData<double>(data, variables["altitude"]));
+                ui->EADI->setPitch(extractVarFromData<double>(data, variables["pitch"]));
+                ui->EADI->setRoll(extractVarFromData<double>(data, variables["roll"]));
 
                 usleep(timestamp - timestamp0);
                 timestamp0 = timestamp;

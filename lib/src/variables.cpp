@@ -57,7 +57,7 @@ void extractVariablesFromConfiguration(std::map<std::string, std::string> &confi
             tolower(tokensVal[ConfigFields::e_mask]);
             uint64_t mask = std::stoul((tokensVal[ConfigFields::e_mask]), 0, 16);
             uint8_t rshift = std::stoi(tokensVal[ConfigFields::e_rshift]);
-            uint64_t ratio = std::stoi(tokensVal[ConfigFields::e_ratio]);
+            double ratio = std::stof(tokensVal[ConfigFields::e_ratio]);
 
             DataEndian endian = stringDataEndian.at(tokensVal[ConfigFields::e_endian]);
 

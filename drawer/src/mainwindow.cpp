@@ -353,9 +353,44 @@ void DebugWindow::on_applyButton_clicked()
         out += QString(toHostEndian?"host":"network") + ",";
         out += "0x" + QString::number(mask, 16) + ",";
         out += QString::number(shift) + ",";
-        out += QString::number(ratio) + ",";
+        out += QString::number(ratio);
     }
     configuration["Vars/" + name] = out.toStdString();
     saveConfiguration(configuration, "config.ini");
+}
+
+
+void DebugWindow::on_variables_editTextChanged(const QString &name)
+{
+    DataSize size;
+    uint32_t offset;
+    DataType type;
+    Qt::CheckState endian;
+    bool toHostEndian;
+    uint64_t mask;
+    uint8_t shift;
+    double ratio;
+
+    if (variables.find(name.toStdString()) != variables.end())
+    {
+
+        size = variables[name.toStdString()].size;
+        offset = variables[name.toStdString()].offset;
+        type = variables[name.toStdString()].type;
+        endian = (variables[name.toStdString()].endian == DataEndian::e_host)?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
+        toHostEndian = (variables[name.toStdString()].endian == DataEndian::e_host)?true:false;
+        mask = variables[name.toStdString()].mask;
+        shift = variables[name.toStdString()].shift;
+        ratio = variables[name.toStdString()].ratio;
+
+        ui->offset->setValue(offset);
+        ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
+        ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
+        ui->endian->setCheckState(endian);
+        ui->mask->setText(QString::number(mask, 16));
+        ui->shift->setValue(shift);
+        ui->ratio->setValue(ratio);
+        updateChart(name.toStdString(), offset, size, type, toHostEndian, mask, shift, ratio);
+    }
 }
 

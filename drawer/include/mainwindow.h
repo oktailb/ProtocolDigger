@@ -35,6 +35,8 @@ private slots:
 
     void on_applyButton_clicked();
 
+    void on_variables_editTextChanged(const QString &arg1);
+
 private:
     Ui::DebugWindow *ui;
     void fillVariables(std::map<std::string, varDef_t> &variables);
