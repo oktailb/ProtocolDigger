@@ -180,6 +180,30 @@ QLineSeries * DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, Data
     return series;
 }
 
+template <typename T> std::vector<T> qLineSeriesXToStdVector(const QLineSeries& series)
+{
+    std::vector<T> result;
+
+    const QList<QPointF>& points = series.points();
+    result.reserve(points.size());
+    for (const QPointF& point : points)
+        result.emplace_back(point.x());
+
+    return result;
+}
+
+template <typename T> std::vector<T> qLineSeriesYToStdVector(const QLineSeries& series)
+{
+    std::vector<T> result;
+
+    const QList<QPointF>& points = series.points();
+    result.reserve(points.size());
+    for (const QPointF& point : points)
+        result.emplace_back(point.y());
+
+    return result;
+}
+
 void DebugWindow::updateChart(std::string name,
                               uint32_t offset,
                               DataSize size,
@@ -190,6 +214,11 @@ void DebugWindow::updateChart(std::string name,
                               double ratio)
 {
     QLineSeries *series = SeriesFromOffset(offset, size, type, toHostEndian, mask, shift, ratio);
+
+    double e = entropy<double>(qLineSeriesYToStdVector<double>(*series));
+    double d = diversity<double>(qLineSeriesYToStdVector<double>(*series));
+
+    ui->statusBar->showMessage("Entropy : " + QString::number(e) + " Diversity : " + QString::number(d));
     QChart *chart = new QChart();
     chart->legend()->hide();
     chart->addSeries(series);
@@ -218,14 +247,6 @@ void DebugWindow::on_variables_currentIndexChanged(int index)
     uint64_t mask = variables[name].mask;
     uint8_t shift = variables[name].shift;
     double ratio = variables[name].ratio;
-
-    // ui->offset->setValue(offset);
-    // ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
-    // ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
-    // ui->endian->setCheckState(endian);
-    // ui->mask->setText(QString::number(mask, 16));
-    // ui->shift->setValue(shift);
-    // ui->ratio->setValue(ratio);
 
     updateChart(name, offset, size, type, toHostEndian, mask, shift, ratio);
 }
