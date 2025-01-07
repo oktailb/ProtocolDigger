@@ -60,11 +60,14 @@ void Instruments::play()
         PacketData data;
         queue.pop(data, std::chrono::milliseconds(200));
         double timestamp0 = data.ts.tv_sec * 1000000 + data.ts.tv_usec;
+        double timesTotal = 0.0;
         while (run) {
             run = queue.pop(data, std::chrono::milliseconds(200));
             double timestamp = data.ts.tv_sec * 1000000 + data.ts.tv_usec;
             if (run)
             {
+                auto start = std::chrono::system_clock::now();
+
                 ui->EADI->setAltitude(extractVarFromData<double>(data, variables["altitude"]));
                 ui->ALT->setAltitude(extractVarFromData<double>(data, variables["altitude"]));
                 ui->EADI->setPitch(extractVarFromData<double>(data, variables["pitch"]));
@@ -78,7 +81,15 @@ void Instruments::play()
                 ui->EHSI->setHeading(extractVarFromData<double>(data, variables["yaw"]));
 
                 //ui->VSI->setClimbRate()
-                usleep(timestamp - timestamp0);
+                timesTotal += timestamp - timestamp0;
+                int seconds = (int)(timesTotal / 1000000) % 60;
+                int minutes = (int)((timesTotal / 1000000) / 60) % 60;
+                this->setWindowTitle("Fake Cockpit - " + QString((minutes < 10)?"0":"") + QString::number(minutes) + ":" + QString((seconds < 10)?"0":"") + QString::number(seconds));
+
+                auto end = std::chrono::system_clock::now();
+                auto elapsed =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+                usleep(timestamp - timestamp0 - elapsed.count());
                 timestamp0 = timestamp;
             }
         }
