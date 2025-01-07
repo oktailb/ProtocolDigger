@@ -5,8 +5,6 @@
 #include "configuration.h"
 #include <stdint.h>
 #include <stdfloat>
-#include <QChart>
-#include <QLineSeries>
 #include <netinet/in.h>
 
 long double mylog2(long double number ) {
@@ -68,11 +66,11 @@ DebugWindow::~DebugWindow()
     delete ui;
 }
 
-void DebugWindow::timerEvent(QTimerEvent *event)
-{
-    QMainWindow::timerEvent(event);
-    ui->centralwidget->repaint();
-}
+// void DebugWindow::timerEvent(QTimerEvent *event)
+// {
+// //    QMainWindow::timerEvent(event);
+// //    ui->centralwidget->repaint();
+// }
 
 QLineSeries * DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio)
 {
@@ -215,10 +213,18 @@ void DebugWindow::updateChart(std::string name,
 {
     QLineSeries *series = SeriesFromOffset(offset, size, type, toHostEndian, mask, shift, ratio);
 
-    double e = entropy<double>(qLineSeriesYToStdVector<double>(*series));
-    double d = diversity<double>(qLineSeriesYToStdVector<double>(*series));
+    std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series);
+    if (tmp.size() != 0)
+    {
+        double e = entropy<double>(tmp);
+        double d = diversity<double>(tmp);
+        double max = *std::max_element(tmp.begin(), tmp.end());
+        double min = *std::min_element(tmp.begin(), tmp.end());
+        ui->statusBar->showMessage("Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max));
+    }
+    else
+        ui->statusBar->showMessage("Please select a variable or an offset");
 
-    ui->statusBar->showMessage("Entropy : " + QString::number(e) + " Diversity : " + QString::number(d));
     QChart *chart = new QChart();
     chart->legend()->hide();
     chart->addSeries(series);
@@ -234,6 +240,7 @@ void DebugWindow::updateChart(std::string name,
     ui->shift->setValue(shift);
     ui->ratio->setValue(ratio);
     ui->chart->setChart(chart);
+    ui->chart->adjustSize();
 }
 
 void DebugWindow::on_variables_currentIndexChanged(int index)
@@ -242,7 +249,6 @@ void DebugWindow::on_variables_currentIndexChanged(int index)
     DataSize size = variables[name].size;
     uint32_t offset = variables[name].offset;
     DataType type = variables[name].type;
-    Qt::CheckState endian = (variables[name].endian == DataEndian::e_host)?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
     bool toHostEndian = (variables[name].endian == DataEndian::e_host)?true:false;
     uint64_t mask = variables[name].mask;
     uint8_t shift = variables[name].shift;
@@ -262,7 +268,6 @@ void DebugWindow::on_offset_valueChanged(int offset)
     DataSize size = variables[name].size;
     variables[name].offset = offset;
     DataType type = variables[name].type;
-    Qt::CheckState endian = (variables[name].endian == DataEndian::e_host)?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
     bool toHostEndian = (variables[name].endian == DataEndian::e_host)?true:false;
     uint64_t mask = variables[name].mask;
     uint8_t shift = variables[name].shift;
@@ -277,7 +282,6 @@ void DebugWindow::on_type_currentTextChanged(const QString &typeStr)
     DataSize size = variables[name].size;
     uint32_t offset = variables[name].offset;
     variables[name].type = stringDataType.at(typeStr.toStdString());
-    Qt::CheckState endian = (variables[name].endian == DataEndian::e_host)?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
     bool toHostEndian = (variables[name].endian == DataEndian::e_host)?true:false;
     uint64_t mask = variables[name].mask;
     uint8_t shift = variables[name].shift;
@@ -293,7 +297,6 @@ void DebugWindow::on_size_currentTextChanged(const QString &sizeStr)
     variables[name].size = stringDataSize.at(sizeStr.toStdString());
     uint32_t offset = variables[name].offset;
     DataType type= variables[name].type;
-    Qt::CheckState endian = (variables[name].endian == DataEndian::e_host)?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
     bool toHostEndian = (variables[name].endian == DataEndian::e_host)?true:false;
     uint64_t mask = variables[name].mask;
     uint8_t shift = variables[name].shift;
@@ -302,29 +305,12 @@ void DebugWindow::on_size_currentTextChanged(const QString &sizeStr)
     updateChart(name, offset, stringDataSize.at(sizeStr.toStdString()), type, toHostEndian, mask, shift, ratio);
 }
 
-
-void DebugWindow::on_endian_checkStateChanged(const Qt::CheckState &state)
-{
-    std::string name = ui->variables->currentText().toStdString();
-    DataSize size = variables[name].size;
-    uint32_t offset = variables[name].offset;
-    DataType type= variables[name].type;
-    bool toHostEndian = (ui->endian->checkState() == Qt::CheckState::Checked);
-    variables[name].endian = (ui->endian->checkState() == Qt::CheckState::Checked)?DataEndian::e_host:DataEndian::e_network;
-    uint64_t mask = variables[name].mask;
-    uint8_t shift = variables[name].shift;
-    double ratio = variables[name].ratio;
-
-    updateChart(name, offset, size, type, toHostEndian, mask, shift, ratio);
-}
-
 void DebugWindow::on_mask_textChanged(const QString &mask)
 {
     std::string name = ui->variables->currentText().toStdString();
     DataSize size = variables[name].size;
     uint32_t offset = variables[name].offset;
     DataType type= variables[name].type;
-    Qt::CheckState endian = (variables[name].endian == DataEndian::e_host)?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
     bool toHostEndian = (variables[name].endian == DataEndian::e_host)?true:false;
     uint64_t newMask = ui->mask->text().toULong(nullptr, 16);
     variables[name].mask = newMask;
@@ -340,7 +326,6 @@ void DebugWindow::on_shift_valueChanged(int shift)
     DataSize size = variables[name].size;
     uint32_t offset = variables[name].offset;
     DataType type= variables[name].type;
-    Qt::CheckState endian = (variables[name].endian == DataEndian::e_host)?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
     bool toHostEndian = (variables[name].endian == DataEndian::e_host)?true:false;
     uint64_t mask = variables[name].mask;
     variables[name].shift = shift;
@@ -355,7 +340,6 @@ void DebugWindow::on_ratio_valueChanged(double ratio)
     DataSize size = variables[name].size;
     uint32_t offset = variables[name].offset;
     DataType type= variables[name].type;
-    Qt::CheckState endian = (variables[name].endian == DataEndian::e_host)?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
     bool toHostEndian = (variables[name].endian == DataEndian::e_host)?true:false;
     uint64_t mask = variables[name].mask;
     uint8_t shift = variables[name].shift;
@@ -371,7 +355,6 @@ void DebugWindow::on_applyButton_clicked()
     DataSize size = variables[name].size;
     uint32_t offset = variables[name].offset;
     DataType type = variables[name].type;
-    Qt::CheckState endian = (variables[name].endian == DataEndian::e_host)?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
     bool toHostEndian = (variables[name].endian == DataEndian::e_host)?true:false;
     uint64_t mask = variables[name].mask;
     uint8_t shift = variables[name].shift;
@@ -410,7 +393,6 @@ void DebugWindow::on_variables_editTextChanged(const QString &name)
         size = variables[name.toStdString()].size;
         offset = variables[name.toStdString()].offset;
         type = variables[name.toStdString()].type;
-        endian = (variables[name.toStdString()].endian == DataEndian::e_host)?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
         toHostEndian = (variables[name.toStdString()].endian == DataEndian::e_host)?true:false;
         mask = variables[name.toStdString()].mask;
         shift = variables[name.toStdString()].shift;
@@ -420,3 +402,27 @@ void DebugWindow::on_variables_editTextChanged(const QString &name)
     }
 }
 
+void DebugWindow::on_endian_toggled(bool checked)
+{
+    std::string name = ui->variables->currentText().toStdString();
+    DataSize size = variables[name].size;
+    uint32_t offset = variables[name].offset;
+    DataType type= variables[name].type;
+    bool toHostEndian = checked;
+    variables[name].endian = checked?DataEndian::e_host:DataEndian::e_network;
+    uint64_t mask = variables[name].mask;
+    uint8_t shift = variables[name].shift;
+    double ratio = variables[name].ratio;
+
+    updateChart(name, offset, size, type, toHostEndian, mask, shift, ratio);
+}
+
+void DebugWindow::wheelEvent(QWheelEvent *event)
+{
+    if (event->angleDelta().y() > 0)
+        ui->chart->chart()->zoomIn();
+    else
+        ui->chart->chart()->zoomOut();
+
+    QMainWindow::wheelEvent(event);
+}

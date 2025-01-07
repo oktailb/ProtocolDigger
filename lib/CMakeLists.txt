@@ -23,7 +23,7 @@ set(PROJECT_SOURCES
     src/pCapUtils.cpp           include/pCapUtils.h
 )
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
     ${PROJECT_SOURCES}
 )
 if (WIN32)

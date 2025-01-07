@@ -2,7 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <qlineseries.h>
+#include "chart.h"
+#include "chartview.h"
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
 #include "variables.h"
 #include "ThreadSafeQueue.h"
 
@@ -21,21 +24,20 @@ public:
     ~DebugWindow();
 
 protected:
-    void timerEvent(QTimerEvent *event);
+   // void timerEvent(QTimerEvent *event);
+    void wheelEvent(QWheelEvent *event);
 
 private slots:
     void on_variables_currentIndexChanged(int index);
     void on_offset_valueChanged(int offset);
     void on_type_currentTextChanged(const QString &arg1);
     void on_size_currentTextChanged(const QString &sizeStr);
-    void on_endian_checkStateChanged(const Qt::CheckState &arg1);
     void on_mask_textChanged(const QString &mask);
     void on_shift_valueChanged(int shift);
     void on_ratio_valueChanged(double ratio);
-
     void on_applyButton_clicked();
-
     void on_variables_editTextChanged(const QString &arg1);
+    void on_endian_toggled(bool checked);
 
 private:
     Ui::DebugWindow *ui;

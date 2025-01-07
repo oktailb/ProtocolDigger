@@ -6,36 +6,36 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1920</width>
-    <height>1080</height>
+    <width>640</width>
+    <height>503</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>1920</width>
-    <height>1080</height>
+    <width>0</width>
+    <height>0</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1920</width>
-    <height>1080</height>
+    <width>16777215</width>
+    <height>16777215</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Sinvi Drawer</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="minimumSize">
     <size>
-     <width>1920</width>
-     <height>1080</height>
+     <width>640</width>
+     <height>480</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
-     <width>1920</width>
-     <height>1080</height>
+     <width>16777215</width>
+     <height>16777215</height>
     </size>
    </property>
    <widget class="QWidget" name="verticalLayoutWidget">
@@ -44,7 +44,7 @@
       <x>0</x>
       <y>0</y>
       <width>1902</width>
-      <height>1030</height>
+      <height>1031</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -123,6 +123,12 @@
        </item>
        <item>
         <widget class="QSpinBox" name="offset">
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="maximum">
           <number>99999</number>
          </property>
@@ -151,7 +157,14 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="type"/>
+        <widget class="QComboBox" name="type">
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>16777215</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QLabel" name="SizeLabel">
@@ -173,7 +186,14 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="size"/>
+        <widget class="QComboBox" name="size">
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>16777215</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QCheckBox" name="endian">
@@ -217,7 +237,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>300</width>
+           <width>150</width>
            <height>16777215</height>
           </size>
          </property>
@@ -321,20 +341,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QChartView" name="chart">
-       <property name="minimumSize">
-        <size>
-         <width>1900</width>
-         <height>1000</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>1900</width>
-         <height>1000</height>
-        </size>
-       </property>
-      </widget>
+      <widget class="ChartView" name="chart"/>
      </item>
     </layout>
    </widget>
@@ -343,9 +350,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QChartView</class>
+   <class>ChartView</class>
    <extends>QGraphicsView</extends>
-   <header>QtCharts</header>
+   <header location="global">chartview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

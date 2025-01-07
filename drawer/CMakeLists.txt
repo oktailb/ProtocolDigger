@@ -19,6 +19,8 @@ find_package(Qt6 REQUIRED COMPONENTS Charts)
 set (${PROJECT_NAME}_SRC
     src/main.cpp
     src/mainwindow.cpp
+    src/chartview.cpp
+    src/chart.cpp
 )
 
 set (${PROJECT_NAME}_UI
@@ -27,6 +29,8 @@ set (${PROJECT_NAME}_UI
 
 set (${PROJECT_NAME}_INCLUDE
     include/mainwindow.h
+    include/chartview.h
+    include/chart.h
 )
 
 qt_add_executable(${PROJECT_NAME}
