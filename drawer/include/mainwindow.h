@@ -39,11 +39,14 @@ private slots:
     void on_variables_editTextChanged(const QString &arg1);
     void on_endian_toggled(bool checked);
 
+
+    void on_autoSearch_clicked();
+
 private:
     Ui::DebugWindow *ui;
     void fillVariables(std::map<std::string, varDef_t> &variables);
     QLineSeries * SeriesFromOffset(uint32_t offset, uint32_t size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio);
-    void updateChart(std::string name, uint32_t offset, DataSize size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio);
+    double updateChart(std::string name, uint32_t offset, DataSize size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio, bool computeOnly);
 
     std::map<std::string, varDef_t> variables;
     std::deque<PacketData> queue;
