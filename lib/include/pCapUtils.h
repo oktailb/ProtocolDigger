@@ -9,6 +9,8 @@ void process_packet(const uint8_t* packet, const struct pcap_pkthdr * header, Th
 void pcapCallback(uint8_t *args, const pcap_pkthdr *header, const uint8_t *packet);
 void read_pcap_file(const std::string& file_name, const std::string& filter_exp, ThreadSafeQueue& queue);
 void read_device(const std::string& device, const std::string& filter_exp, ThreadSafeQueue& queue);
+void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& queue);
+
 std::string printIP(uint32_t val);
 
 template<typename T> T ntoh(T val)

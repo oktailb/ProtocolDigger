@@ -1,7 +1,9 @@
 #include "pCapUtils.h"
 #include "defs.h"
 
+#include <cstring>
 #include <iostream>
+#include <unistd.h>
 
 // Function to parse the UDP packet payload
 void process_packet(const uint8_t* packet, const struct pcap_pkthdr * header, ThreadSafeQueue& queue)
@@ -70,30 +72,6 @@ void read_device(const std::string& device, const std::string& filter_exp, Threa
 {
     char errbuf[PCAP_ERRBUF_SIZE];
 
-//     pcap_if_t *interfaces;
-
-// #ifdef __WIN32__
-//     if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &interfaces, pcapError) < 0)
-// #else
-//     if (pcap_findalldevs(&interfaces, errbuf) < 0)
-// #endif
-//     {
-//         std::cerr << "Could find any open device: " << errbuf << std::endl;
-//         exit(EXIT_FAILURE);
-//     }
-//     else
-//     {
-//         std::string message;
-//         pcap_if_t *interfacesIt = interfaces;
-//         message += "Network Interfaces:\n";
-//         while (interfacesIt)
-//         {
-//             message += " - " + std::string(interfacesIt->name) + " ====> " + interfacesIt->description + (device.compare(interfacesIt->name) == 0?" *":"") + "\n";
-//             interfacesIt = interfacesIt->next;
-//         }
-//         std::cerr << message << std::endl;
-//     }
-
     pcap_t* handle = pcap_open_live(device.c_str(),8192, 1, 20, errbuf);
     if (!handle) {
         std::cerr << "Could not open device: " << errbuf << std::endl;
@@ -121,6 +99,40 @@ void read_device(const std::string& device, const std::string& filter_exp, Threa
     pcap_close(handle);
 }
 
+void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& queue)
+{
+    int sockfd;
+    PacketData buffer;
+
+    buffer.payload.reserve(6565);
+
+    struct sockaddr_in     servaddr;
+
+    // Creating socket file descriptor
+    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+        perror("socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    memset(&servaddr, 0, sizeof(servaddr));
+
+    // Filling server information
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(port);
+    servaddr.sin_addr.s_addr = inet_addr(address.c_str());
+
+    ssize_t n = 0;
+    socklen_t len;
+
+    while (true)
+    {
+        n = recvfrom(sockfd, (char *)buffer.payload.data(), 8192,
+                     MSG_WAITALL, (struct sockaddr *) &servaddr,
+                     &len);
+        queue.push(buffer);
+    }
+    close(sockfd);
+}
 
 std::string printIP(uint32_t val)
 {

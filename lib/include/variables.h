@@ -4,6 +4,7 @@
 #include <map>
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 enum ConfigFields {e_offset, e_type, e_size, e_endian, e_mask, e_rshift, e_ratio};
 
@@ -72,4 +73,4 @@ typedef struct  varDef_s {
 
 void extractVariablesFromConfiguration(std::map<std::string, std::string> &configuration, std::map<std::string, varDef_t> &variables);
 std::string findByOffset(uint32_t offset, std::map<std::string, varDef_t> base);
-
+std::vector<std::string> split(const std::string& s, char seperator);
