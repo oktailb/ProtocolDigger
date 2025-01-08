@@ -129,6 +129,8 @@ void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& que
         n = recvfrom(sockfd, (char *)buffer.payload.data(), 8192,
                      MSG_WAITALL, (struct sockaddr *) &servaddr,
                      &len);
+        buffer.len = n;
+        gettimeofday(&buffer.ts, NULL);
         queue.push(buffer);
     }
     close(sockfd);
