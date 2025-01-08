@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<PropertyList>
+    <generic>
+    <input>
+        <binary_mode>true</binary_mode>
+        <binary_footer>length</binary_footer>
+        <byte_order>network</byte_order>
+        <!-- 0x0000 --><chunk> <name>pad0</name><type>int</type><node>/padding</node> </chunk>
+        <!-- 0x0004 --><chunk> <name>pad1</name><type>int</type><node>/padding</node> </chunk>
+        <!-- 0x0008 --><chunk> <name>pad2</name><type>int</type><node>/padding</node> </chunk>
+        <!-- 0x000c --><chunk> <name>pad3</name><type>int</type><node>/padding</node> </chunk>
+        <!-- 0x0010 --><chunk> <name>pad4</name><type>int</type><node>/padding</node> </chunk>
+        <!-- 0x0011 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
+        <!-- 0x0012 -->
+        <chunk>
+            <name>yaw</name>
+            <type>double</type>
+            <node>/orientation/heading-deg</node>
+        </chunk>
+        <!-- 0x001A -->
+        <chunk>
+            <name>indicated speed (kt)</name>
+            <type>double</type>
+            <node>/velocities/airspeed-kt</node>
+        </chunk>
+        <!-- 0x0022 -->
+        <chunk>
+            <name>pitch att (deg)</name>
+            <type>double</type>
+            <node>/orientation/roll-deg</node>
+        </chunk>
+        <!-- 0x002A -->
+        <chunk>
+            <name>pitch att (deg)</name>
+            <type>double</type>
+            <node>/orientation/pitch-deg</node>
+        </chunk>
+        <!-- 0x0032 --><chunk> <name>pad12</name><type>bool</type><node>/padding</node> </chunk>
+        <!-- 0x0033 --><chunk> <name>pad13</name><type>bool</type><node>/padding</node> </chunk>
+        <!-- 0x0034 -->
+        <chunk>
+            <name>altitude</name>
+            <type>double</type>
+            <node>/position/altitude-ft</node>
+        </chunk>
+    </input>
+    <output>
+        <binary_mode>true</binary_mode>
+        <binary_footer>length</binary_footer>
+        <byte_order>network</byte_order>
+        <!-- 0x0000 --><chunk> <name>pad0</name><type>int</type><node>/padding</node> </chunk>
+        <!-- 0x0004 --><chunk> <name>pad1</name><type>int</type><node>/padding</node> </chunk>
+        <!-- 0x0008 --><chunk> <name>pad2</name><type>int</type><node>/padding</node> </chunk>
+        <!-- 0x000c --><chunk> <name>pad3</name><type>int</type><node>/padding</node> </chunk>
+        <!-- 0x0010 --><chunk> <name>pad4</name><type>int</type><node>/padding</node> </chunk>
+        <!-- 0x0011 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
+        <!-- 0x0012 -->
+        <chunk>
+            <name>yaw</name>
+            <type>double</type>
+            <node>/orientation/heading-deg</node>
+        </chunk>
+        <!-- 0x001A -->
+        <chunk>
+            <name>indicated speed (kt)</name>
+            <type>double</type>
+            <node>/velocities/airspeed-kt</node>
+        </chunk>
+        <!-- 0x0022 -->
+        <chunk>
+            <name>pitch att (deg)</name>
+            <type>double</type>
+            <node>/orientation/roll-deg</node>
+        </chunk>
+        <!-- 0x002A -->
+        <chunk>
+            <name>pitch att (deg)</name>
+            <type>double</type>
+            <node>/orientation/pitch-deg</node>
+        </chunk>
+    </output>
+    </generic>
+</PropertyList>
