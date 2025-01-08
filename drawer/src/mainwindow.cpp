@@ -91,14 +91,16 @@ QLineSeries * DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, Data
                 float tmp;
                 memcpy(&tmp, mapper + offset, sizeof(float));
                 if (toHostEndian) ntoh<float>(tmp);
-                series->append(timestamp, tmp / ratio);
+                if (!std::isinf(tmp / ratio))
+                    series->append(timestamp, tmp / ratio);
             }
             break;
             case DataSize::e_64: {
                 double tmp;
                 memcpy(&tmp, mapper + offset, sizeof(double));
                 if (toHostEndian) ntoh<double>(tmp);
-                series->append(timestamp, tmp / ratio);
+                if (!std::isinf(tmp / ratio))
+                    series->append(timestamp, tmp / ratio);
             }
             break;
             default:
@@ -202,17 +204,21 @@ template <typename T> std::vector<T> qLineSeriesYToStdVector(const QLineSeries& 
     return result;
 }
 
-double DebugWindow::updateChart(std::string name,
-                                uint32_t offset,
-                                DataSize size,
-                                DataType type,
-                                bool toHostEndian,
-                                uint64_t mask,
-                                uint8_t shift,
-                                double ratio,
-                                bool computeOnly = false)
+bool DebugWindow::computeChartByCriteria(std::string name,
+                                         uint32_t offset,
+                                         DataSize size,
+                                         DataType type,
+                                         bool toHostEndian,
+                                         uint64_t mask,
+                                         uint8_t shift,
+                                         double ratio,
+                                         double diversityMin,
+                                         double minVal,
+                                         double maxVal,
+                                         double amplitudeMin,
+                                         double amplitudeMax)
 {
-    double res = 0;
+    bool res = false;
     QLineSeries *series = SeriesFromOffset(offset, size, type, toHostEndian, mask, shift, ratio);
 
     std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series);
@@ -222,33 +228,58 @@ double DebugWindow::updateChart(std::string name,
         double d = diversity<double>(tmp);
         double max = *std::max_element(tmp.begin(), tmp.end());
         double min = *std::min_element(tmp.begin(), tmp.end());
-        res = d;
-        if (!computeOnly)
-        {
-            ui->statusBar->showMessage("Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max));
+        double amp = max - min;
+        if (d >= diversityMin)
+            if (min >= minVal)
+                if (max <= maxVal)
+                    if (amp <= amplitudeMax)
+                        if (amp >= amplitudeMin)
+                            res = true;
+    }
 
-            QChart *chart = new QChart();
-            chart->legend()->hide();
-            chart->addSeries(series);
-            chart->createDefaultAxes();
-            chart->setTitle(name.c_str());
+    return res;
+}
 
-            ui->variables->setCurrentText(name.c_str());
-            ui->offset->setValue(offset);
-            ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
-            ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
-            ui->endian->setCheckState(toHostEndian?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
-            ui->mask->setText(QString::number(mask, 16));
-            ui->shift->setValue(shift);
-            ui->ratio->setValue(ratio);
-            ui->chart->setChart(chart);
-            ui->chart->adjustSize();
-        }
+void DebugWindow::updateChart(std::string name,
+                              uint32_t offset,
+                              DataSize size,
+                              DataType type,
+                              bool toHostEndian,
+                              uint64_t mask,
+                              uint8_t shift,
+                              double ratio)
+{
+    QLineSeries *series = SeriesFromOffset(offset, size, type, toHostEndian, mask, shift, ratio);
+
+    std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series);
+    if (tmp.size() != 0)
+    {
+        double e = entropy<double>(tmp);
+        double d = diversity<double>(tmp);
+        double max = *std::max_element(tmp.begin(), tmp.end());
+        double min = *std::min_element(tmp.begin(), tmp.end());
+
+        ui->statusBar->showMessage("Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max));
+
+        QChart *chart = new QChart();
+        chart->legend()->hide();
+        chart->addSeries(series);
+        chart->createDefaultAxes();
+        chart->setTitle(name.c_str());
+
+        ui->variables->setCurrentText(name.c_str());
+        ui->offset->setValue(offset);
+        ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
+        ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
+        ui->endian->setCheckState(toHostEndian?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
+        ui->mask->setText(QString::number(mask, 16));
+        ui->shift->setValue(shift);
+        ui->ratio->setValue(ratio);
+        ui->chart->setChart(chart);
+        ui->chart->adjustSize();
     }
     else
         ui->statusBar->showMessage("Please select a variable or an offset");
-
-    return res;
 }
 
 void DebugWindow::on_variables_currentIndexChanged(int index)
@@ -395,30 +426,30 @@ void DebugWindow::on_applyButton_clicked()
 }
 
 
-void DebugWindow::on_variables_editTextChanged(const QString &name)
-{
-    DataSize size;
-    uint32_t offset;
-    DataType type;
-    Qt::CheckState endian;
-    bool toHostEndian;
-    uint64_t mask;
-    uint8_t shift;
-    double ratio;
+// void DebugWindow::on_variables_editTextChanged(const QString &name)
+// {
+//     DataSize size;
+//     uint32_t offset;
+//     DataType type;
+//     Qt::CheckState endian;
+//     bool toHostEndian;
+//     uint64_t mask;
+//     uint8_t shift;
+//     double ratio;
 
-    if (variables.find(name.toStdString()) != variables.end())
-    {
-        size = variables[name.toStdString()].size;
-        offset = variables[name.toStdString()].offset;
-        type = variables[name.toStdString()].type;
-        toHostEndian = (variables[name.toStdString()].endian == DataEndian::e_host)?true:false;
-        mask = variables[name.toStdString()].mask;
-        shift = variables[name.toStdString()].shift;
-        ratio = variables[name.toStdString()].ratio;
+//     if (variables.find(name.toStdString()) != variables.end())
+//     {
+//         size = variables[name.toStdString()].size;
+//         offset = variables[name.toStdString()].offset;
+//         type = variables[name.toStdString()].type;
+//         toHostEndian = (variables[name.toStdString()].endian == DataEndian::e_host)?true:false;
+//         mask = variables[name.toStdString()].mask;
+//         shift = variables[name.toStdString()].shift;
+//         ratio = variables[name.toStdString()].ratio;
 
-        updateChart(name.toStdString(), offset, size, type, toHostEndian, mask, shift, ratio);
-    }
-}
+//         updateChart(name.toStdString(), offset, size, type, toHostEndian, mask, shift, ratio);
+//     }
+// }
 
 void DebugWindow::on_endian_toggled(bool checked)
 {
@@ -449,8 +480,11 @@ void DebugWindow::on_autoSearch_clicked()
 {
     uint32_t currentOffset = ui->offset->value();
 
-    double diversity;
     double diversityMin = ui->diversityMin->value();
+    double min = ui->minVal->value();
+    double max = ui->maxVal->value();
+    double ampMin = ui->ampMin->value();
+    double ampMax = ui->ampMax->value();
     std::string name = "autoDetected";
     DataSize size = stringDataSize.at(ui->size->currentText().toStdString());
     DataType type = stringDataType.at(ui->type->currentText().toStdString());
@@ -458,11 +492,13 @@ void DebugWindow::on_autoSearch_clicked()
     uint64_t mask = ui->mask->text().toInt(nullptr, 16);
     uint8_t shift = ui->shift->value();
     double ratio = ui->ratio->value();
-    while (diversity < diversityMin)
+
+    bool found = false;
+    while (!found)
     {
         currentOffset++;
-        diversity = updateChart(name, currentOffset, size, type, toHostEndian, mask, shift, ratio, true);
+        found = computeChartByCriteria(name, currentOffset, size, type, toHostEndian, mask, shift, ratio, diversityMin, min, max, ampMin, ampMax);
     }
-    diversity = updateChart(name, currentOffset, size, type, toHostEndian, mask, shift, ratio);
+    updateChart(name, currentOffset, size, type, toHostEndian, mask, shift, ratio);
 }
 
