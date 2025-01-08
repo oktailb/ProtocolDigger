@@ -33,6 +33,7 @@ private:
     ThreadSafeQueue &queue;
     int timerId;
     bool run;
+    bool localFileMode;
 
 };
 #endif // INSTRUMENTS_H

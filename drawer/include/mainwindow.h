@@ -57,8 +57,11 @@ private:
     void updateChart(std::string name, uint32_t offset, DataSize size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio);
 
     std::map<std::string, varDef_t> variables;
-    std::deque<PacketData> queue;
+    ThreadSafeQueue &queue;
+    std::deque<PacketData> queueData;
     int timerId;
+    uint32_t packetSize;
+    bool localFileMode;
 
     std::map<std::string, std::string> configuration;
 };

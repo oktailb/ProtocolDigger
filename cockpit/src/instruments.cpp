@@ -16,6 +16,12 @@ Instruments::Instruments(std::map<std::string, std::string> &configuration, Thre
 
     ui->setupUi(this);
     timerId = startTimer(20);
+    localFileMode = true;
+    if (configuration.find("Input/file") == configuration.end())
+        localFileMode = false;
+    else
+        if (configuration.at("Input/file").compare("") == 0)
+            localFileMode = false;
 }
 
 Instruments::~Instruments()
@@ -86,10 +92,13 @@ void Instruments::play()
                 int minutes = (int)((timesTotal / 1000000) / 60) % 60;
                 this->setWindowTitle("Fake Cockpit - " + QString((minutes < 10)?"0":"") + QString::number(minutes) + ":" + QString((seconds < 10)?"0":"") + QString::number(seconds));
 
-                auto end = std::chrono::system_clock::now();
-                auto elapsed =
-                    std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-                usleep(timestamp - timestamp0 - elapsed.count());
+                if (localFileMode)
+                {
+                    auto end = std::chrono::system_clock::now();
+                    auto elapsed =
+                        std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+                    usleep(timestamp - timestamp0 - elapsed.count());
+                }
                 timestamp0 = timestamp;
             }
         }

@@ -40,14 +40,22 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     : QMainWindow(parent)
     , ui(new Ui::DebugWindow)
     , configuration(configuration)
-    , queue(queue.data())
+    , queue(queue)
+    , queueData(queue.data())
     , timerId(0)
+    , packetSize(0)
 {
     extractVariablesFromConfiguration(configuration, variables);
 
     ui->setupUi(this);
     fillVariables(variables);
     timerId = startTimer(20);
+    localFileMode = true;
+    if (configuration.find("Input/file") == configuration.end())
+        localFileMode = false;
+    else
+        if (configuration.at("Input/file").compare("") == 0)
+            localFileMode = false;
 }
 
 void DebugWindow::fillVariables(std::map<std::string, varDef_t> &variablesList)
@@ -74,13 +82,16 @@ DebugWindow::~DebugWindow()
 
 QLineSeries * DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio)
 {
+
     QLineSeries *series = new QLineSeries();
     //series->append(0, 0);
-    double timestamp0 = queue[0].ts.tv_sec * 1000 + queue[0].ts.tv_usec / 1000;
-    for (uint32_t pkt = 0 ; pkt < queue.size() ; pkt++)
+    double timestamp0 = queueData[0].ts.tv_sec * 1000 + queueData[0].ts.tv_usec / 1000;
+    packetSize = queueData[0].payload.size();
+    ui->offset->setMaximum(packetSize);
+    for (uint32_t pkt = 0 ; pkt < queueData.size() ; pkt++)
     {
-        double timestamp = (queue[pkt].ts.tv_sec * 1000 + queue[pkt].ts.tv_usec / 1000 - timestamp0) / 1000.0;
-        uint8_t *mapper = (uint8_t*) queue[pkt].payload.data();
+        double timestamp = (queueData[pkt].ts.tv_sec * 1000 + queueData[pkt].ts.tv_usec / 1000 - timestamp0) / 1000.0;
+        uint8_t *mapper = (uint8_t*) queueData[pkt].payload.data();
 
         switch(type)
         {
@@ -498,7 +509,12 @@ void DebugWindow::on_autoSearch_clicked()
     {
         currentOffset++;
         found = computeChartByCriteria(name, currentOffset, size, type, toHostEndian, mask, shift, ratio, diversityMin, min, max, ampMin, ampMax);
+        if (currentOffset >= packetSize)
+            break;
     }
-    updateChart(name, currentOffset, size, type, toHostEndian, mask, shift, ratio);
+    if (found)
+        updateChart(name, currentOffset, size, type, toHostEndian, mask, shift, ratio);
+    else
+        ui->statusBar->showMessage("No relevant candidate found.");
 }
 
