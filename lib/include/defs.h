@@ -1,4 +1,6 @@
 #pragma once
+#include "ThreadSafeQueue.h"
+#include <map>
 #include <string>
 #include <netinet/ip.h>
 
@@ -74,3 +76,4 @@ int __stdcall WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, char*, int
 
 void usage(int argc, char **argv);
 std::string version();
+void init(std::map<std::string, std::string> &configuration, ThreadSafeQueue &queue);

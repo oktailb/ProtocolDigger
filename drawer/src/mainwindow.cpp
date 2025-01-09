@@ -90,6 +90,8 @@ QLineSeries * DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, Data
     ui->offset->setMaximum(packetSize);
     for (uint32_t pkt = 0 ; pkt < queueData.size() ; pkt++)
     {
+        if (queueData[pkt].payload.size() == 0)
+            continue;
         double timestamp = (queueData[pkt].ts.tv_sec * 1000 + queueData[pkt].ts.tv_usec / 1000 - timestamp0) / 1000.0;
         uint8_t *mapper = (uint8_t*) queueData[pkt].payload.data();
 
