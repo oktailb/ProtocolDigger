@@ -5,6 +5,52 @@
 #include <iostream>
 #include <unistd.h>
 
+void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queue)
+{
+    int sockfd;
+    struct sockaddr_in server_addr, client_addr;
+    PacketData buffer;
+    socklen_t addr_size;
+    int n;
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0){
+        perror("[-]socket error");
+        exit(1);
+    }
+
+    memset(&server_addr, '\0', sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+    server_addr.sin_addr.s_addr = inet_addr(address.c_str());
+
+    n = bind(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
+    if (n < 0) {
+        perror("[-]bind error");
+        exit(1);
+    }
+
+    buffer.len = 6573;
+    buffer.payload.reserve(buffer.len);
+
+    addr_size = sizeof(client_addr);
+    recvfrom(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&client_addr, &addr_size);
+    bool run = queue.pop(buffer, std::chrono::milliseconds(200));
+
+    double timestamp0 = buffer.ts.tv_sec * 1000000 + buffer.ts.tv_usec;
+    while (run)
+    {
+        run = queue.pop(buffer, std::chrono::milliseconds(200));
+        double timestamp = buffer.ts.tv_sec * 1000000 + buffer.ts.tv_usec;
+        auto start = std::chrono::system_clock::now();
+        sendto(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&client_addr, sizeof(client_addr));
+        auto end = std::chrono::system_clock::now();
+        auto elapsed =
+            std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        usleep(timestamp - timestamp0 - elapsed.count());
+    }
+}
+
 // Function to parse the UDP packet payload
 void process_packet(const uint8_t* packet, const struct pcap_pkthdr * header, ThreadSafeQueue& queue)
 {
@@ -104,7 +150,8 @@ void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& que
     int sockfd;
     PacketData buffer;
 
-    buffer.payload.reserve(6565);
+    buffer.len = 6573;
+    buffer.payload.reserve(buffer.len);
 
     struct sockaddr_in     servaddr;
 
@@ -124,6 +171,7 @@ void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& que
     ssize_t n = 0;
     socklen_t len;
 
+    sendto(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&servaddr, sizeof(servaddr));
     while (true)
     {
         n = recvfrom(sockfd, (char *)buffer.payload.data(), 8192,
