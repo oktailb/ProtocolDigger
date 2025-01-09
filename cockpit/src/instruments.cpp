@@ -1,6 +1,7 @@
 #include "include/instruments.h"
 #include "./ui_instruments.h"
 #include "pCapUtils.h"
+#include <iostream>
 #include <thread>
 #include <unistd.h>
 
@@ -69,7 +70,10 @@ void Instruments::play()
         double timesTotal = 0.0;
         while (run) {
             run = queue.pop(data, std::chrono::milliseconds(200));
+            if (data.payload.size() == 0)
+                continue;
             double timestamp = data.ts.tv_sec * 1000000 + data.ts.tv_usec;
+            //std::cerr << data.ts.tv_sec << " - " <<  data.ts.tv_usec << std::endl;
             if (run)
             {
                 auto start = std::chrono::system_clock::now();
@@ -98,11 +102,12 @@ void Instruments::play()
                     auto elapsed =
                         std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
                     usleep(timestamp - timestamp0 - elapsed.count());
+                    //std::cerr << (timestamp - timestamp0 - elapsed.count()) << std::endl;
                 }
                 timestamp0 = timestamp;
             }
         }
-
+        exit(EXIT_SUCCESS);
     });
 
     consumer_thread.detach();

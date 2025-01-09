@@ -34,20 +34,20 @@ void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queu
     buffer.payload.reserve(buffer.len);
 
     addr_size = sizeof(client_addr);
+    // Wait for a client connexion ...
+    std::cerr << "Waiting for incoming connexion on port " << port <<  "..." << std::endl;
     recvfrom(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&client_addr, &addr_size);
+    std::cerr << "Client connected " << printIP(client_addr.sin_addr.s_addr) << " !" << std::endl;
+
     bool run = queue.pop(buffer, std::chrono::milliseconds(200));
+    std::cerr << "Processing packets ..." << std::endl;
 
     double timestamp0 = buffer.ts.tv_sec * 1000000 + buffer.ts.tv_usec;
     while (run)
     {
         run = queue.pop(buffer, std::chrono::milliseconds(200));
-        double timestamp = buffer.ts.tv_sec * 1000000 + buffer.ts.tv_usec;
-        auto start = std::chrono::system_clock::now();
         sendto(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&client_addr, sizeof(client_addr));
-        auto end = std::chrono::system_clock::now();
-        auto elapsed =
-            std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        usleep(timestamp - timestamp0 - elapsed.count());
+        usleep(10*1000);
     }
 }
 
@@ -152,6 +152,7 @@ void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& que
 
     buffer.len = 6573;
     buffer.payload.reserve(buffer.len);
+    buffer.payload.resize(buffer.len);
 
     struct sockaddr_in     servaddr;
 
@@ -174,10 +175,12 @@ void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& que
     sendto(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&servaddr, sizeof(servaddr));
     while (true)
     {
-        n = recvfrom(sockfd, (char *)buffer.payload.data(), 8192,
+        uint8_t tmp[8192];
+        n = recvfrom(sockfd, buffer.payload.data(), 8192,
                      MSG_WAITALL, (struct sockaddr *) &servaddr,
                      &len);
         buffer.len = n;
+        // buffer.payload.assign(assign(n, *tmp);
         gettimeofday(&buffer.ts, NULL);
         queue.push(buffer);
     }
@@ -187,7 +190,7 @@ void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& que
 std::string printIP(uint32_t val)
 {
     std::string res = "";
-    val = ntohl(val);
+    //val = ntohl(val);
     res += std::to_string((val) & 0xFF);
     res += ".";
     res += std::to_string((val >> 8) & 0xFF);

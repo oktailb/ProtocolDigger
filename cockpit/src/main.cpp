@@ -14,11 +14,16 @@ int main(int argc, char *argv[])
     configuration = readConfiguration(argv[1]);
     init(configuration, queue);
 
-    QApplication a(argc, argv);
-    Instruments i(configuration, std::ref(queue));
+    if (configuration["Input/otherClient"].compare("true") != 0)
+    {
+        QApplication a(argc, argv);
+        Instruments i(configuration, std::ref(queue));
 
-    i.show();
-    i.play();
+        i.play();
+        i.show();
 
-    return a.exec();
+        return a.exec();
+    }
+    else
+        return (EXIT_SUCCESS);
 }
