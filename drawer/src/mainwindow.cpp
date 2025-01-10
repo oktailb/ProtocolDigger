@@ -269,25 +269,18 @@ void DebugWindow::updateChart(std::string name)
     std::vector<std::string> names = split(name, ',');
     for (auto currentName : names)
     {
-        if (currentName.compare("new ...") == 0)
+        if (variables.find(currentName) == variables.end())
         {
-            size = stringDataSize.at(ui->size->currentText().toStdString());
-            offset = ui->offset->value();
-            type = stringDataType.at(ui->type->currentText().toStdString());
-            toHostEndian = (ui->endian->checkState() == Qt::CheckState::Checked)?true:false;
-            mask = ui->mask->text().toInt(nullptr, 16);
-            shift = ui->shift->value();
-            ratio = ui->ratio->value();
+            size = DataSize::e_64;
+            offset = 0;
+            type = DataType::e_float;
+            toHostEndian = false;
+            mask = 0xFFFFFFFFFFFFFFFF;
+            shift = 0;
+            ratio = 1.0;
         }
         else
         {
-            if (variables.find(currentName) == variables.end())
-            {
-                std::cerr << currentName << " not found" << std::endl;
-                for (auto it : variables)
-                    std::cerr << " - " << it.first << std::endl;
-                continue;
-            }
             varDef_t var = variables.at(currentName);
             offset = var.offset;
             size = var.size;
@@ -297,10 +290,9 @@ void DebugWindow::updateChart(std::string name)
             shift = var.shift;
             ratio = var.ratio;
         }
+
         QLineSeries *series = SeriesFromOffset(offset, size, type, toHostEndian, mask, shift, ratio);
         chart->addSeries(series);
-        std::cerr << currentName << " added from offset " << offset << std::endl;
-        chart->createDefaultAxes();
 
         std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series);
         if (tmp.size() != 0)
@@ -322,6 +314,17 @@ void DebugWindow::updateChart(std::string name)
     ui->chart->setChart(chart);
     ui->chart->adjustSize();
     ui->chart->repaint();
+    if (names.size() == 1)
+    {
+        ui->variables->setCurrentText(name.c_str());
+        ui->offset->setValue(offset);
+        ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
+        ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
+        ui->endian->setCheckState(toHostEndian?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
+        ui->mask->setText(QString::number(mask, 16));
+        ui->shift->setValue(shift);
+        ui->ratio->setValue(ratio);
+    }
     ui->statusBar->showMessage(status);
 }
 
