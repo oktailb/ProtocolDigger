@@ -258,13 +258,14 @@ void DebugWindow::updateChart(std::string name)
 
     QChart *chart = new QChart();
     QString status = "";
-    DataSize size;
-    uint32_t offset;
-    DataType type;
-    bool toHostEndian;
-    uint64_t mask;
-    uint8_t shift;
-    double ratio;
+
+    DataSize size = DataSize::e_64;
+    uint32_t offset = 0;
+    DataType type = DataType::e_float;
+    bool toHostEndian = false;
+    uint64_t mask = 0xFFFFFFFFFFFFFFFF;
+    uint8_t shift = 0;
+    double ratio = 1.0;
 
     std::vector<std::string> names = split(name, ',');
     for (auto currentName : names)
