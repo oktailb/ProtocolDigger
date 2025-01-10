@@ -281,16 +281,26 @@ void DebugWindow::updateChart(std::string name)
         }
         else
         {
-            offset = variables[currentName].offset;
-            size = variables[currentName].size;
-            type = variables[currentName].type;
-            toHostEndian = variables[currentName].endian == DataEndian::e_host?true:false;
-            mask = variables[currentName].mask;
-            shift = variables[currentName].shift;
-            ratio = variables[currentName].ratio;
+            if (variables.find(currentName) == variables.end())
+            {
+                std::cerr << currentName << " not found" << std::endl;
+                for (auto it : variables)
+                    std::cerr << " - " << it.first << std::endl;
+                continue;
+            }
+            varDef_t var = variables.at(currentName);
+            offset = var.offset;
+            size = var.size;
+            type = var.type;
+            toHostEndian = var.endian == DataEndian::e_host?true:false;
+            mask = var.mask;
+            shift = var.shift;
+            ratio = var.ratio;
         }
         QLineSeries *series = SeriesFromOffset(offset, size, type, toHostEndian, mask, shift, ratio);
         chart->addSeries(series);
+        std::cerr << currentName << " added from offset " << offset << std::endl;
+        chart->createDefaultAxes();
 
         std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series);
         if (tmp.size() != 0)
@@ -311,6 +321,7 @@ void DebugWindow::updateChart(std::string name)
 
     ui->chart->setChart(chart);
     ui->chart->adjustSize();
+    ui->chart->repaint();
     ui->statusBar->showMessage(status);
 }
 

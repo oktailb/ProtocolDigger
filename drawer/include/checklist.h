@@ -184,7 +184,7 @@ private:
                 {
                     if (!text.isEmpty())
                     {
-                        text+= ", ";
+                        text+= ",";
                     }
 
                     text+= m_model->item(i)->text();
