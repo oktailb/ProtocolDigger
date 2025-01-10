@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1094</width>
+    <width>1316</width>
     <height>767</height>
    </rect>
   </property>
@@ -97,7 +97,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="variables">
+       <widget class="QCheckList" name="variables">
         <property name="minimumSize">
          <size>
           <width>150</width>
@@ -526,6 +526,11 @@
    <class>ChartView</class>
    <extends>QGraphicsView</extends>
    <header location="global">chartview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QCheckList</class>
+   <extends>QComboBox</extends>
+   <header>include/checklist.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

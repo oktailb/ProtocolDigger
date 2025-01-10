@@ -31,6 +31,7 @@ set (${PROJECT_NAME}_INCLUDE
     include/mainwindow.h
     include/chartview.h
     include/chart.h
+    include/checklist.h
 )
 
 qt_add_executable(${PROJECT_NAME}

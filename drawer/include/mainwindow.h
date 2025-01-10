@@ -29,6 +29,7 @@ protected:
 
 private slots:
     void on_variables_currentIndexChanged(int index);
+    void on_variables_globalCheckStateChanged(int index);
     void on_offset_valueChanged(int offset);
     void on_type_currentTextChanged(const QString &arg1);
     void on_size_currentTextChanged(const QString &sizeStr);
@@ -54,7 +55,7 @@ private:
                                 uint64_t mask,
                                 uint8_t shift,
                                 double ratio, double diversityMin, double minVal, double maxVal, double amplitudeMin, double amplitudeMax);
-    void updateChart(std::string name, uint32_t offset, DataSize size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio);
+    void updateChart(std::string name);
 
     std::map<std::string, varDef_t> variables;
     ThreadSafeQueue &queue;

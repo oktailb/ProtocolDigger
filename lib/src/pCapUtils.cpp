@@ -38,16 +38,22 @@ void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queu
     std::cerr << "Waiting for incoming connexion on port " << port <<  "..." << std::endl;
     recvfrom(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&client_addr, &addr_size);
     std::cerr << "Client connected " << printIP(client_addr.sin_addr.s_addr) << " !" << std::endl;
+    std::cerr << buffer.payload.data() << std::endl;
 
     bool run = queue.pop(buffer, std::chrono::milliseconds(200));
+
     std::cerr << "Processing packets ..." << std::endl;
 
     double timestamp0 = buffer.ts.tv_sec * 1000000 + buffer.ts.tv_usec;
+    double timesTotal = 0.0;
     while (run)
     {
         run = queue.pop(buffer, std::chrono::milliseconds(200));
         sendto(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&client_addr, sizeof(client_addr));
-        usleep(10*1000);
+        usleep(10000);
+        // recvfrom(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&client_addr, &addr_size);
+        // std::cerr << "Client " << printIP(client_addr.sin_addr.s_addr) << " tick !" << std::endl;
+        // std::cerr << buffer.payload.size() << " bytes received" << std::endl;
     }
 }
 
@@ -175,13 +181,12 @@ void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& que
     sendto(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&servaddr, sizeof(servaddr));
     while (true)
     {
-        uint8_t tmp[8192];
         n = recvfrom(sockfd, buffer.payload.data(), 8192,
                      MSG_WAITALL, (struct sockaddr *) &servaddr,
                      &len);
         buffer.len = n;
-        // buffer.payload.assign(assign(n, *tmp);
         gettimeofday(&buffer.ts, NULL);
+
         queue.push(buffer);
     }
     close(sockfd);
