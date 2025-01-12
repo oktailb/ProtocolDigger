@@ -2,8 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "chart.h"
-#include "chartview.h"
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QValueAxis>
 #include "variables.h"
@@ -24,7 +22,7 @@ public:
     ~DebugWindow();
 
 protected:
-   // void timerEvent(QTimerEvent *event);
+    void timerEvent(QTimerEvent *event);
     void wheelEvent(QWheelEvent *event);
 
 private slots:
@@ -37,16 +35,13 @@ private slots:
     void on_shift_valueChanged(int shift);
     void on_ratio_valueChanged(double ratio);
     void on_applyButton_clicked();
-    //void on_variables_editTextChanged(const QString &arg1);
     void on_endian_toggled(bool checked);
-
-
     void on_autoSearch_clicked();
 
 private:
     Ui::DebugWindow *ui;
     void fillVariables(std::map<std::string, varDef_t> &variables);
-    QLineSeries * SeriesFromOffset(uint32_t offset, uint32_t size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio);
+    void SeriesFromOffset(uint32_t offset, uint32_t size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio);
     bool computeChartByCriteria(std::string name,
                                 uint32_t offset,
                                 DataSize size,
@@ -63,7 +58,10 @@ private:
     int timerId;
     uint32_t packetSize;
     bool localFileMode;
-
+    QChart *chart;
     std::map<std::string, std::string> configuration;
+    bool ready;
+    std::map<uint32_t, QLineSeries *> series;
+    std::map<uint32_t, uint32_t> pktIndex;
 };
 #endif // MAINWINDOW_H

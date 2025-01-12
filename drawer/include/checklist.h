@@ -150,6 +150,22 @@ public:
         return res;
     }
 
+    QList<QString> getCheckedText()
+    {
+        QList<QString> res;
+
+        int nbRows = m_model->rowCount(), nbChecked = 0, nbUnchecked = 0;
+
+        if (nbRows == 0)
+            throw;
+
+        for (int i = 0; i < nbRows; i++)
+            if (m_model->item(i)->checkState() == Qt::Checked)
+                res.push_back(m_model->item(i)->text());
+
+        return res;
+    }
+
 protected:
     bool eventFilter(QObject* _object, QEvent* _event)
     {
