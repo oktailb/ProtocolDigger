@@ -1,7 +1,6 @@
 #include "include/instruments.h"
 #include "./ui_instruments.h"
 #include "pCapUtils.h"
-#include <iostream>
 #include <thread>
 #include <unistd.h>
 
@@ -46,11 +45,11 @@ void Instruments::timerEvent(QTimerEvent *event)
     ui->ASI->redraw();
 }
 
-template<typename T> T extractVarFromData(PacketData &data, varDef_t &var)
+template<typename T> T extractVarFromData(PacketData *data, varDef_t &var)
 {
     T res;
 
-    uint8_t *mapper = (uint8_t*) data.payload.data();
+    uint8_t *mapper = (uint8_t*) data->payload.data();
 
     memcpy(&res, mapper + var.offset, sizeof(T));
     if (var.endian == DataEndian::e_host)
@@ -64,15 +63,15 @@ void Instruments::play()
 {
     std::thread consumer_thread([this]() {
 
-        PacketData data;
+        PacketData * data = new PacketData();
         queue.pop(data, std::chrono::milliseconds(200));
-        double timestamp0 = data.ts.tv_sec * 1000000 + data.ts.tv_usec;
+        double timestamp0 = data->ts.tv_sec * 1000000 + data->ts.tv_usec;
         double timesTotal = 0.0;
         while (run) {
             run = queue.pop(data, std::chrono::milliseconds(200));
-            if (data.payload.size() == 0)
+            if (data->payload.size() == 0)
                 continue;
-            double timestamp = data.ts.tv_sec * 1000000 + data.ts.tv_usec;
+            double timestamp = data->ts.tv_sec * 1000000 + data->ts.tv_usec;
             //std::cerr << data.ts.tv_sec << " - " <<  data.ts.tv_usec << std::endl;
             if (run)
             {

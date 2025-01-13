@@ -54,7 +54,7 @@ private:
 
     std::map<std::string, varDef_t> variables;
     ThreadSafeQueue &queue;
-    std::deque<PacketData> queueData;
+    std::deque<PacketData*> queueData;
     int timerId;
     uint32_t packetSize;
     bool localFileMode;

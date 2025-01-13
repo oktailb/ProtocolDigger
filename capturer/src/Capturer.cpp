@@ -81,21 +81,21 @@ int main(int argc, char* argv[]) {
         std::thread consumer_thread([&queue, &configuration, &variables]() {
             bool fullScan = true;
 
-            PacketData data;
+            PacketData * data = new PacketData();
             std::map<uint32_t, std::vector<ttype> > csv;
             bool run = true;
             while (run) {
                 run = queue.pop(data, std::chrono::milliseconds(200));
                 if (run)
                 {
-                    uint32_t *mapper32 = (uint32_t*) data.payload.data();
-                    uint32_t len32 = data.payload.size() / 4;
+                    uint32_t *mapper32 = (uint32_t*) data->payload.data();
+                    uint32_t len32 = data->payload.size() / 4;
                     for (uint32_t offset = 0 ; offset < len32 / 4; offset++)
                     {
                         mapper32[offset] = ntoh(mapper32[offset]); // completement débile
                     }
-                    uint8_t *mapper = (uint8_t*) data.payload.data();
-                    uint32_t len = data.payload.size() / (fullScan?1:sizeof(ttype));
+                    uint8_t *mapper = (uint8_t*) data->payload.data();
+                    uint32_t len = data->payload.size() / (fullScan?1:sizeof(ttype));
 
                     for (uint32_t offset = 0 ; offset < len - sizeof(ttype); offset++)
                     {

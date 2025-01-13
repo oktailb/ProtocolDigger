@@ -14,12 +14,12 @@ struct PacketData {
 // thread-safe queue
 class ThreadSafeQueue {
 public:
-    void push(const PacketData& data);
-    bool pop(PacketData& data, std::chrono::milliseconds timeout);
-    std::deque<PacketData> &data();
+    void push(PacketData* data);
+    bool pop(PacketData *data, std::chrono::milliseconds timeout);
+    std::deque<PacketData*> &data();
 
 private:
-    std::deque<PacketData> queue_;
+    std::deque<PacketData*> queue_;
     std::mutex mutex_;
     std::condition_variable cv_;
 };

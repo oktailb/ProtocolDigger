@@ -3,13 +3,14 @@
 
 #include <cstring>
 #include <iostream>
+#include <thread>
 #include <unistd.h>
 
 void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queue)
 {
     int sockfd;
     struct sockaddr_in server_addr, client_addr;
-    PacketData buffer;
+    PacketData *buffer = new PacketData();
     socklen_t addr_size;
     int n;
 
@@ -30,31 +31,32 @@ void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queu
         exit(1);
     }
 
-    buffer.len = 6573;
-    buffer.payload.reserve(buffer.len);
+    buffer->len = 6573;
+    buffer->payload.reserve(buffer->len);
 
     addr_size = sizeof(client_addr);
     // Wait for a client connexion ...
     std::cerr << "Waiting for incoming connexion on port " << port <<  "..." << std::endl;
-    recvfrom(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&client_addr, &addr_size);
+    recvfrom(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)&client_addr, &addr_size);
     std::cerr << "Client connected " << printIP(client_addr.sin_addr.s_addr) << " !" << std::endl;
-    std::cerr << buffer.payload.data() << std::endl;
+    std::cerr << buffer->payload.data() << std::endl;
 
     bool run = queue.pop(buffer, std::chrono::milliseconds(200));
 
     std::cerr << "Processing packets ..." << std::endl;
 
-    double timestamp0 = buffer.ts.tv_sec * 1000000 + buffer.ts.tv_usec;
+    uint64_t timestamp0 = buffer->ts.tv_sec * 1000000 + buffer->ts.tv_usec;
     double timesTotal = 0.0;
     while (run)
     {
         run = queue.pop(buffer, std::chrono::milliseconds(200));
-        sendto(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&client_addr, sizeof(client_addr));
-        usleep(10000);
-        // recvfrom(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&client_addr, &addr_size);
-        // std::cerr << "Client " << printIP(client_addr.sin_addr.s_addr) << " tick !" << std::endl;
-        // std::cerr << buffer.payload.size() << " bytes received" << std::endl;
+        uint64_t timestamp = buffer->ts.tv_sec * 1000000 + buffer->ts.tv_usec;
+        std::this_thread::sleep_for(std::chrono::microseconds((timestamp - timestamp0)));
+        sendto(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)&client_addr, sizeof(client_addr));
+
+        timestamp0 = timestamp;
     }
+    std::cerr << "Done." << std::endl;
 }
 
 // Function to parse the UDP packet payload
@@ -72,11 +74,11 @@ void process_packet(const uint8_t* packet, const struct pcap_pkthdr * header, Th
     const udp_header_t* udp_header = (const udp_header_t*)((uint8_t*)ip_header + ip_header_size);
     const uint8_t* payload = (uint8_t *)udp_header + udp_header_size;
 
-    PacketData data;
-    data.len = ntohs(udp_header->length) /*- (ethernet_header_size + ip_header_size + udp_header_size)*/;
-    data.payload.assign(payload, payload + data.len);
-    data.ts.tv_sec = header->ts.tv_sec;
-    data.ts.tv_usec = header->ts.tv_usec;
+    PacketData *data = new PacketData();
+    data->len = ntohs(udp_header->length) /*- (ethernet_header_size + ip_header_size + udp_header_size)*/;
+    data->payload.assign(payload, payload + data->len);
+    data->ts.tv_sec = header->ts.tv_sec;
+    data->ts.tv_usec = header->ts.tv_usec;
     queue.push(data);
 }
 
@@ -154,11 +156,11 @@ void read_device(const std::string& device, const std::string& filter_exp, Threa
 void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& queue)
 {
     int sockfd;
-    PacketData buffer;
+    PacketData *buffer = new PacketData();
 
-    buffer.len = 6573;
-    buffer.payload.reserve(buffer.len);
-    buffer.payload.resize(buffer.len);
+    buffer->len = 6573;
+    buffer->payload.reserve(buffer->len);
+    buffer->payload.resize(buffer->len);
 
     struct sockaddr_in     servaddr;
 
@@ -178,14 +180,15 @@ void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& que
     ssize_t n = 0;
     socklen_t len;
 
-    sendto(sockfd, buffer.payload.data(), buffer.len, 0, (struct sockaddr*)&servaddr, sizeof(servaddr));
+    sendto(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)&servaddr, sizeof(servaddr));
     while (true)
     {
-        n = recvfrom(sockfd, buffer.payload.data(), 8192,
+        n = recvfrom(sockfd, buffer->payload.data(), 8192,
                      MSG_WAITALL, (struct sockaddr *) &servaddr,
                      &len);
-        buffer.len = n;
-        gettimeofday(&buffer.ts, NULL);
+
+        buffer->len = n;
+        gettimeofday(&buffer->ts, NULL);
 
         queue.push(buffer);
     }

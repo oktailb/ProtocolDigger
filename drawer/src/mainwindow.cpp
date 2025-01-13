@@ -96,22 +96,26 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type
     {
         serie = new QLineSeries();
         series[offset] = serie;
-        pktIndex[offset] = 0;
+        pktIndex[offset] = 1;
     }
     else
         serie = series[offset];
 
     queueData = queue.data();
-    double timestamp0 = queueData[0].ts.tv_sec * 1000 + queueData[0].ts.tv_usec / 1000;
-    packetSize = queueData[0].payload.size();
+    packetSize = queueData[0]->payload.size();
     ui->offset->setMaximum(packetSize);
-    for (uint32_t pkt = pktIndex[offset] ; pkt < queueData.size() ; pkt++)
+    uint32_t pkt = pktIndex[offset];
+    uint32_t qsize = queueData.size();
+    if (pkt >= qsize)
+        return;
+    double timestamp0 = queueData[0]->ts.tv_sec * 1000 + (queueData[0]->ts.tv_usec / 1000);
+    while (pkt < qsize)
     {
-        pktIndex[offset] = pkt;
-        if (queueData[pkt].payload.size() == 0)
+        PacketData * pdata = queueData[pkt];
+        if (pdata->payload.size() == 0)
             continue;
-        double timestamp = (queueData[pkt].ts.tv_sec * 1000 + queueData[pkt].ts.tv_usec / 1000 - timestamp0) / 1000.0;
-        uint8_t *mapper = (uint8_t*) queueData[pkt].payload.data();
+        double timestamp = pdata->ts.tv_sec * 1000 + (pdata->ts.tv_usec / 1000);
+        uint8_t *mapper = (uint8_t*) pdata->payload.data();
 
         switch(type)
         {
@@ -206,7 +210,9 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type
         default:
             break;
         }
+        pkt++;
     }
+    pktIndex[offset] = pkt;
 }
 
 template <typename T> std::vector<T> qLineSeriesXToStdVector(const QLineSeries& series)
@@ -414,7 +420,7 @@ void DebugWindow::on_variables_currentIndexChanged(int index)
     ui->shift->setValue(shift);
     ui->ratio->setValue(ratio);
 
-    updateChart(name);
+    //updateChart(name);
 }
 
 void DebugWindow::on_variables_globalCheckStateChanged(int index)
@@ -422,7 +428,7 @@ void DebugWindow::on_variables_globalCheckStateChanged(int index)
     if (!ready)
         return;
     std::string nameList = ui->variables->currentText().toStdString();
-    updateChart(nameList);
+    //updateChart(nameList);
 }
 
 void DebugWindow::on_offset_valueChanged(int offset)
@@ -433,12 +439,13 @@ void DebugWindow::on_offset_valueChanged(int offset)
     if (findByOffset(offset, variables).length() != 0)
     {
         name = findByOffset(offset, variables);
-        updateChart(name);
+        ui->variables->setCurrentText(name.c_str());
+//        updateChart(name);
     }
     else
     {
         name = "new ...";
-        updateChart(name);
+//        updateChart(name);
     }
 }
 
@@ -447,7 +454,8 @@ void DebugWindow::on_type_currentTextChanged(const QString &typeStr)
     if (!ready)
         return;
     std::string name = ui->variables->currentText().toStdString();
-    updateChart(name);
+    variables[name].type = stringDataType.at(typeStr.toStdString());
+//    updateChart(name);
 }
 
 
@@ -458,7 +466,7 @@ void DebugWindow::on_size_currentTextChanged(const QString &sizeStr)
     std::string name = ui->variables->currentText().toStdString();
     variables[name].size = stringDataSize.at(sizeStr.toStdString());
 
-    updateChart(name);
+//    updateChart(name);
 }
 
 void DebugWindow::on_mask_textChanged(const QString &mask)
@@ -468,7 +476,7 @@ void DebugWindow::on_mask_textChanged(const QString &mask)
     std::string name = ui->variables->currentText().toStdString();
     variables[name].mask = ui->mask->text().toULong(nullptr, 16);;
 
-    updateChart(name);
+    //updateChart(name);
 }
 
 void DebugWindow::on_shift_valueChanged(int shift)
@@ -478,7 +486,7 @@ void DebugWindow::on_shift_valueChanged(int shift)
     std::string name = ui->variables->currentText().toStdString();
     variables[name].shift = shift;
 
-    updateChart(name);
+    //updateChart(name);
 }
 
 void DebugWindow::on_ratio_valueChanged(double ratio)
@@ -488,7 +496,7 @@ void DebugWindow::on_ratio_valueChanged(double ratio)
     std::string name = ui->variables->currentText().toStdString();
     variables[name].ratio = ratio;
 
-    updateChart(name);
+    //updateChart(name);
 }
 
 
@@ -529,7 +537,7 @@ void DebugWindow::on_endian_toggled(bool checked)
     bool toHostEndian = checked;
     variables[name].endian = checked?DataEndian::e_host:DataEndian::e_network;
 
-    updateChart(name);
+    //updateChart(name);
 }
 
 void DebugWindow::wheelEvent(QWheelEvent *event)
