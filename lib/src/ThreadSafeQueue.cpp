@@ -2,8 +2,12 @@
 
 void ThreadSafeQueue::push(PacketData *data) {
     {
+        PacketData *tmp = new PacketData();
+        tmp->payload.assign(data->payload.begin(), data->payload.end());
+        tmp->len = data->len;
+        tmp->ts = data->ts;
         std::unique_lock<std::mutex> lock(mutex_);
-        queue_.push_back(data); // Use push_back for queue semantics
+        queue_.push_back(tmp); // Use push_back for queue semantics
     }
     cv_.notify_one();
 }

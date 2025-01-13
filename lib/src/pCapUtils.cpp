@@ -8,6 +8,7 @@
 
 void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queue)
 {
+    u_thread_setname(__func__);
     int sockfd;
     struct sockaddr_in server_addr, client_addr;
     PacketData *buffer = new PacketData();
@@ -124,6 +125,8 @@ void read_pcap_file(const std::string& file_name, const std::string& filter_exp,
 
 void read_device(const std::string& device, const std::string& filter_exp, ThreadSafeQueue& queue)
 {
+    u_thread_setname(__func__);
+
     char errbuf[PCAP_ERRBUF_SIZE];
 
     pcap_t* handle = pcap_open_live(device.c_str(),8192, 1, 20, errbuf);
@@ -155,6 +158,8 @@ void read_device(const std::string& device, const std::string& filter_exp, Threa
 
 void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& queue)
 {
+    u_thread_setname(__func__);
+
     int sockfd;
     PacketData *buffer = new PacketData();
 

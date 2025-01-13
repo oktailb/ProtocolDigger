@@ -77,3 +77,8 @@ int __stdcall WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, char*, int
 void usage(int argc, char **argv);
 std::string version();
 void init(std::map<std::string, std::string> &configuration, ThreadSafeQueue &queue);
+
+static inline void u_thread_setname( const char *name )
+{
+    pthread_setname_np(pthread_self(), name);
+}

@@ -89,6 +89,25 @@ void DebugWindow::timerEvent(QTimerEvent *event)
     ui->chart->repaint();
 }
 
+uint64_t timeval_diff(struct timeval *end_time, struct timeval *start_time)
+{
+    struct timeval difference;
+
+    difference.tv_sec =end_time->tv_sec -start_time->tv_sec ;
+    difference.tv_usec=end_time->tv_usec-start_time->tv_usec;
+
+    /* Using while instead of if below makes the code slightly more robust. */
+
+    while(difference.tv_usec<0)
+    {
+        difference.tv_usec+=1000000;
+        difference.tv_sec -=1;
+    }
+
+    return 1000000LL * difference.tv_sec + difference.tv_usec;
+
+}
+
 void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio)
 {
     QLineSeries *serie = nullptr;
@@ -108,13 +127,14 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type
     uint32_t qsize = queueData.size();
     if (pkt >= qsize)
         return;
-    double timestamp0 = queueData[0]->ts.tv_sec * 1000 + (queueData[0]->ts.tv_usec / 1000);
+    timeval timestamp0 = queueData[0]->ts;
     while (pkt < qsize)
     {
         PacketData * pdata = queueData[pkt];
         if (pdata->payload.size() == 0)
             continue;
-        double timestamp = pdata->ts.tv_sec * 1000 + (pdata->ts.tv_usec / 1000);
+        timeval timestamp1 = pdata->ts;
+        timestamp = timeval_diff(&timestamp1, &timestamp0) / 1000;
         uint8_t *mapper = (uint8_t*) pdata->payload.data();
 
         switch(type)
@@ -395,6 +415,9 @@ void DebugWindow::updateChart(std::string name)
     }
     else
         ui->statusBar->showMessage(status);
+    if (!ui->chart->chart()->axes(Qt::Horizontal).empty())
+        ui->chart->chart()->axes(Qt::Horizontal)[0]->setRange(0, (qulonglong)timestamp * 1.1666);
+
     ready = true;
 }
 

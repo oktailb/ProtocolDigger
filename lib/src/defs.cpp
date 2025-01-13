@@ -55,6 +55,7 @@ void init(std::map<std::string, std::string> &configuration, ThreadSafeQueue &qu
             std::vector<std::string> tokens = split(configuration.find("Input/address")->second, ':');
             read_pcap_file(pcap_file, filter_expression, srvQueue);
             std::thread server_thread(sendPcapTo, tokens[0], std::stoi(tokens[1]), std::ref(srvQueue));
+
             if (!otherClient)
             {
                 server_thread.detach();
