@@ -52,7 +52,6 @@ void extractVariablesFromConfiguration(std::map<std::string, std::string> &confi
                 size  = stringDataSize.at(tokensVal[ConfigFields::e_size]);
             else {
                 len  = std::stoi(tokensVal[ConfigFields::e_size]);
-                continue;
             }
             tolower(tokensVal[ConfigFields::e_mask]);
             uint64_t mask = std::stoul((tokensVal[ConfigFields::e_mask]), 0, 16);
