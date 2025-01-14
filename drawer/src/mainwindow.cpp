@@ -134,6 +134,10 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type
             serie->removePoints(0, overlap);
         }
     queueData = queue.data();
+    if (queueData.size() == 0)
+        return;
+    if (queueData[0] == nullptr)
+        return;
     packetSize = queueData[0]->payload.size();
     ui->offset->setMaximum(packetSize);
     uint32_t pkt = pktIndex[offset];

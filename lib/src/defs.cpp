@@ -43,6 +43,7 @@ void init(std::map<std::string, std::string> &configuration, ThreadSafeQueue &qu
     std::string mode = configuration["Input/mode"];
     bool relay = configuration["Input/relayPcap"].compare("true") == 0?true:false;
     bool otherClient = configuration["Input/otherClient"].compare("true") == 0?true:false;
+    bool serverMode = configuration["Input/serverMode"].compare("true") == 0?true:false;
     std::string pcap_file = configuration["Input/file"];
     std::string pcap_device = configuration["Input/device"];
     std::string filter_expression = configuration["Input/filter"];
@@ -55,7 +56,7 @@ void init(std::map<std::string, std::string> &configuration, ThreadSafeQueue &qu
         {
             std::vector<std::string> tokens = split(configuration.find("Input/address")->second, ':');
             read_pcap_file(pcap_file, filter_expression, srvQueue);
-            std::thread server_thread(sendPcapTo, tokens[0], std::stoi(tokens[1]), std::ref(srvQueue), packetLen);
+            std::thread server_thread(sendPcapTo, tokens[0], std::stoi(tokens[1]), std::ref(srvQueue), packetLen, serverMode);
 
             if (!otherClient)
             {
@@ -76,7 +77,7 @@ void init(std::map<std::string, std::string> &configuration, ThreadSafeQueue &qu
     if (mode.compare("socket") == 0)
     {
         std::vector<std::string> tokens = split(configuration.find("Input/address")->second, ':');
-        std::thread reader_thread(read_socket, tokens[0], std::stoi(tokens[1]), std::ref(queue), packetLen);
+        std::thread reader_thread(read_socket, tokens[0], std::stoi(tokens[1]), std::ref(queue), packetLen, serverMode);
         reader_thread.detach();
     }
 }
