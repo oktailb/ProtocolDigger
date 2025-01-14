@@ -62,7 +62,7 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     chart->setAnimationDuration(0);
     chart->createDefaultAxes();
     ui->chart->setChart(chart);
-
+    timeWindowSize = std::stof(configuration.at("Input/timeWindowSize"));
     ready = true;
 }
 
@@ -120,6 +120,19 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type
     else
         serie = series[offset];
 
+    uint64_t count = serie->count();
+    double frequency = 100.0;
+    if (count > 2)
+    {
+        double diff = (serie->at(count - 1).x() - serie->at(count - 2).x());
+        frequency = 1.0 / diff;
+    }
+    if (timeWindowSize > 0.001) // this not an oscilloscope ...
+        if (count > timeWindowSize * frequency)
+        {
+            uint64_t overlap = count - timeWindowSize * frequency;
+            serie->removePoints(0, overlap);
+        }
     queueData = queue.data();
     packetSize = queueData[0]->payload.size();
     ui->offset->setMaximum(packetSize);
@@ -134,7 +147,7 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type
         if (pdata->payload.size() == 0)
             continue;
         timeval timestamp1 = pdata->ts;
-        timestamp = timeval_diff(&timestamp1, &timestamp0) / 1000;
+        timestamp = (double)timeval_diff(&timestamp1, &timestamp0) / 1000000.0f;
         uint8_t *mapper = (uint8_t*) pdata->payload.data();
 
         switch(type)
@@ -327,6 +340,31 @@ inline void hideDisabledSeriesInChart(QChart* chart, QCheckList *list)
     }
 }
 
+template <typename T> T average(std::vector<T> const& v)
+{
+    if(v.empty())
+        return 0;
+
+    auto const count = static_cast<float>(v.size());
+    return std::reduce(v.begin(), v.end()) / count;
+}
+
+template <typename T> T averageDiff(std::vector<T> const& v)
+{
+    if(v.empty())
+        return 0;
+    if(v.size() == 1)
+        return 0;
+    T time0 = 0;
+    T sumDiff = 0;
+    for (auto time : v)
+    {
+        sumDiff += time - time0;
+        time0 = time;
+    }
+    return (sumDiff / v.size());
+}
+
 void DebugWindow::updateChart(std::string name)
 {
     if (!ready)
@@ -384,7 +422,6 @@ void DebugWindow::updateChart(std::string name)
         if (!isSerieVisibleInChart(chart, serie))
             serie->show();
 
-
         if (names.size() == 1)
         {
             std::vector<double> tmp = qLineSeriesYToStdVector<double>(*serie);
@@ -415,8 +452,9 @@ void DebugWindow::updateChart(std::string name)
     }
     else
         ui->statusBar->showMessage(status);
-    if (!ui->chart->chart()->axes(Qt::Horizontal).empty())
-        ui->chart->chart()->axes(Qt::Horizontal)[0]->setRange(0, (qulonglong)timestamp * 1.1666);
+    if (timeWindowSize > 0.001) // this is not an oscilloscope ...
+        if (!ui->chart->chart()->axes(Qt::Horizontal).empty())
+            ui->chart->chart()->axes(Qt::Horizontal)[0]->setRange((timestamp > timeWindowSize)?(timestamp - timeWindowSize):0.0, timestamp);
 
     ready = true;
 }
@@ -463,12 +501,12 @@ void DebugWindow::on_offset_valueChanged(int offset)
     {
         name = findByOffset(offset, variables);
         ui->variables->setCurrentText(name.c_str());
-//        updateChart(name);
+        //        updateChart(name);
     }
     else
     {
         name = "new ...";
-//        updateChart(name);
+        //        updateChart(name);
     }
 }
 
@@ -478,7 +516,7 @@ void DebugWindow::on_type_currentTextChanged(const QString &typeStr)
         return;
     std::string name = ui->variables->currentText().toStdString();
     variables[name].type = stringDataType.at(typeStr.toStdString());
-//    updateChart(name);
+    //    updateChart(name);
 }
 
 
@@ -489,7 +527,7 @@ void DebugWindow::on_size_currentTextChanged(const QString &sizeStr)
     std::string name = ui->variables->currentText().toStdString();
     variables[name].size = stringDataSize.at(sizeStr.toStdString());
 
-//    updateChart(name);
+    //    updateChart(name);
 }
 
 void DebugWindow::on_mask_textChanged(const QString &mask)
@@ -565,12 +603,13 @@ void DebugWindow::on_endian_toggled(bool checked)
 
 void DebugWindow::wheelEvent(QWheelEvent *event)
 {
+    double ratio = 1.1666;
     if (!ready)
         return;
     if (event->angleDelta().y() > 0)
-        ui->chart->chart()->zoomIn();
+        ui->chart->chart()->zoom(ratio);
     else
-        ui->chart->chart()->zoomOut();
+        ui->chart->chart()->zoom(1.0 / ratio);
 
     QMainWindow::wheelEvent(event);
 }

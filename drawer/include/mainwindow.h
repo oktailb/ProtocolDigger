@@ -63,6 +63,7 @@ private:
     bool ready;
     std::map<uint32_t, QLineSeries *> series;
     std::map<uint32_t, uint32_t> pktIndex;
-    uint64_t timestamp;
+    double timestamp;
+    double timeWindowSize;
 };
 #endif // MAINWINDOW_H
