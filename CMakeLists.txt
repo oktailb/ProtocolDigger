@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(Sinvi   VERSION 0.1
+project(Sinvi   VERSION 0.9
                 LANGUAGES CXX
-                DESCRIPTION "Reverse enginering of Invis"
+                DESCRIPTION "Reverse enginering tool for fixed size protocols"
             )
 
 include("build.cmake")
