@@ -6,11 +6,10 @@
 #include <thread>
 #include <unistd.h>
 
-void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queue, uint64_t packetLen)
+int configureSocket(const std::string& address, uint16_t port, uint64_t packetLen, bool serverMode, struct sockaddr_in *client_addr)
 {
-    u_thread_setname(__func__);
     int sockfd;
-    struct sockaddr_in server_addr, client_addr;
+    struct sockaddr_in server_addr;
     PacketData *buffer = new PacketData();
     socklen_t addr_size;
     int n;
@@ -26,35 +25,54 @@ void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queu
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = inet_addr(address.c_str());
 
-    n = bind(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
-    if (n < 0) {
-        perror("[-]bind error");
-        exit(1);
+    if (serverMode)
+    {
+        n = bind(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
+        if (n < 0) {
+            perror("[-]bind error");
+            exit(1);
+        }
+
+        buffer->len = packetLen;
+        buffer->payload.reserve(buffer->len);
+
+        addr_size = sizeof(client_addr);
+        // Wait for a client connexion ...
+        std::cerr << "Waiting for incoming connexion on port " << port <<  "..." << std::endl;
+        recvfrom(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)client_addr, &addr_size);
+        std::cerr << "Client connected " << printIP(client_addr->sin_addr.s_addr) << " !" << std::endl;
+        std::cerr << buffer->payload.data() << std::endl;
     }
+    else
+    {
+        std::cerr << "Knocking door on " << address << ":"  << port <<  "..." << std::endl;
+        sendto(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)&server_addr, sizeof(server_addr));
+        std::cerr << "Connected granted to " << printIP(client_addr->sin_addr.s_addr) << " !" << std::endl;
+    }
+    delete buffer;
 
-    buffer->len = packetLen;
-    buffer->payload.reserve(buffer->len);
+    return sockfd;
+}
 
-    addr_size = sizeof(client_addr);
-    // Wait for a client connexion ...
-    std::cerr << "Waiting for incoming connexion on port " << port <<  "..." << std::endl;
-    recvfrom(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)&client_addr, &addr_size);
-    std::cerr << "Client connected " << printIP(client_addr.sin_addr.s_addr) << " !" << std::endl;
-    std::cerr << buffer->payload.data() << std::endl;
+void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queue, uint64_t packetLen, bool serverMode)
+{
+    u_thread_setname(__func__);
+    PacketData *buffer = new PacketData();
+    struct sockaddr_in client_addr;
+
+    int sockfd = configureSocket(address, port, packetLen, serverMode, &client_addr);
 
     bool run = queue.pop(buffer, std::chrono::milliseconds(200));
 
     std::cerr << "Processing packets ..." << std::endl;
 
     uint64_t timestamp0 = buffer->ts.tv_sec * 1000000 + buffer->ts.tv_usec;
-    double timesTotal = 0.0;
     while (run)
     {
         run = queue.pop(buffer, std::chrono::milliseconds(200));
         uint64_t timestamp = buffer->ts.tv_sec * 1000000 + buffer->ts.tv_usec;
         std::this_thread::sleep_for(std::chrono::microseconds((timestamp - timestamp0)));
         sendto(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)&client_addr, sizeof(client_addr));
-
         timestamp0 = timestamp;
     }
     std::cerr << "Done." << std::endl;
@@ -156,41 +174,26 @@ void read_device(const std::string& device, const std::string& filter_exp, Threa
     pcap_close(handle);
 }
 
-void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& queue, uint64_t packetLen)
+void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& queue, uint64_t packetLen, bool serverMode)
 {
     u_thread_setname(__func__);
-
-    int sockfd;
     PacketData *buffer = new PacketData();
+    struct sockaddr_in server_addr;
+
+    int sockfd = configureSocket(address, port, packetLen, !serverMode, &server_addr);
 
     buffer->len = packetLen;
     buffer->payload.reserve(buffer->len);
     buffer->payload.resize(buffer->len);
 
-    struct sockaddr_in     servaddr;
+    int n;
+    socklen_t addr_size = sizeof(server_addr);
 
-    // Creating socket file descriptor
-    if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
-        perror("socket creation failed");
-        exit(EXIT_FAILURE);
-    }
-
-    memset(&servaddr, 0, sizeof(servaddr));
-
-    // Filling server information
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(port);
-    servaddr.sin_addr.s_addr = inet_addr(address.c_str());
-
-    ssize_t n = 0;
-    socklen_t len;
-
-    sendto(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)&servaddr, sizeof(servaddr));
     while (true)
     {
         n = recvfrom(sockfd, buffer->payload.data(), packetLen,
-                     MSG_WAITALL, (struct sockaddr *) &servaddr,
-                     &len);
+                     MSG_WAITALL, (struct sockaddr *)&server_addr,
+                     &addr_size);
 
         buffer->len = n;
         gettimeofday(&buffer->ts, NULL);
