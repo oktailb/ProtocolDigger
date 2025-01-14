@@ -47,6 +47,7 @@ void init(std::map<std::string, std::string> &configuration, ThreadSafeQueue &qu
     std::string pcap_device = configuration["Input/device"];
     std::string filter_expression = configuration["Input/filter"];
     std::string address = configuration["Input/address"];
+    uint64_t packetLen = std::stoi(configuration["Input/packetLen"]);
 
     if (mode.compare("file") == 0)
     {
@@ -54,7 +55,7 @@ void init(std::map<std::string, std::string> &configuration, ThreadSafeQueue &qu
         {
             std::vector<std::string> tokens = split(configuration.find("Input/address")->second, ':');
             read_pcap_file(pcap_file, filter_expression, srvQueue);
-            std::thread server_thread(sendPcapTo, tokens[0], std::stoi(tokens[1]), std::ref(srvQueue));
+            std::thread server_thread(sendPcapTo, tokens[0], std::stoi(tokens[1]), std::ref(srvQueue), packetLen);
 
             if (!otherClient)
             {
@@ -75,7 +76,7 @@ void init(std::map<std::string, std::string> &configuration, ThreadSafeQueue &qu
     if (mode.compare("socket") == 0)
     {
         std::vector<std::string> tokens = split(configuration.find("Input/address")->second, ':');
-        std::thread reader_thread(read_socket, tokens[0], std::stoi(tokens[1]), std::ref(queue));
+        std::thread reader_thread(read_socket, tokens[0], std::stoi(tokens[1]), std::ref(queue), packetLen);
         reader_thread.detach();
     }
 }

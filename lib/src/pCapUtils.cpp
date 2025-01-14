@@ -6,7 +6,7 @@
 #include <thread>
 #include <unistd.h>
 
-void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queue)
+void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queue, uint64_t packetLen)
 {
     u_thread_setname(__func__);
     int sockfd;
@@ -32,7 +32,7 @@ void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queu
         exit(1);
     }
 
-    buffer->len = 6573;
+    buffer->len = packetLen;
     buffer->payload.reserve(buffer->len);
 
     addr_size = sizeof(client_addr);
@@ -156,14 +156,14 @@ void read_device(const std::string& device, const std::string& filter_exp, Threa
     pcap_close(handle);
 }
 
-void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& queue)
+void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& queue, uint64_t packetLen)
 {
     u_thread_setname(__func__);
 
     int sockfd;
     PacketData *buffer = new PacketData();
 
-    buffer->len = 6573;
+    buffer->len = packetLen;
     buffer->payload.reserve(buffer->len);
     buffer->payload.resize(buffer->len);
 
@@ -188,7 +188,7 @@ void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& que
     sendto(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)&servaddr, sizeof(servaddr));
     while (true)
     {
-        n = recvfrom(sockfd, buffer->payload.data(), 8192,
+        n = recvfrom(sockfd, buffer->payload.data(), packetLen,
                      MSG_WAITALL, (struct sockaddr *) &servaddr,
                      &len);
 
