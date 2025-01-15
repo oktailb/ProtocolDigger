@@ -108,7 +108,7 @@ uint64_t timeval_diff(struct timeval *end_time, struct timeval *start_time)
 
 }
 
-void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio)
+void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio)
 {
     QLineSeries *serie = nullptr;
     if (series.find(offset) == series.end())
@@ -139,6 +139,8 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type
     if (queueData[0] == nullptr)
         return;
     packetSize = queueData[0]->payload.size();
+    if (offset > packetSize)
+        return;
     ui->offset->setMaximum(packetSize);
     uint32_t pkt = pktIndex[offset];
     uint32_t qsize = queueData.size();
@@ -244,6 +246,25 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, DataType type
 
         case DataType::e_string:
             break;
+        case DataType::e_sint:
+        {
+            uint64_t tmp = 0;
+            char * tmpStr = (char *)malloc(len + 1);
+            strncpy(tmpStr, (char *)mapper + offset, len);
+            tmpStr[len] = '\0';
+            try {
+                tmp = std::stoi(tmpStr);
+            } catch (...) {
+                std::cerr << offset << " : " << tmpStr << " -> 0x";
+                int i = 0;
+                while (i < len)
+                    std::cerr << std::hex << (int)(tmpStr[i++]);
+                std::cerr << std::endl;
+            }
+            serie->append(timestamp, tmp);
+            free (tmpStr);
+            break;
+        }
         default:
             break;
         }
@@ -279,6 +300,7 @@ template <typename T> std::vector<T> qLineSeriesYToStdVector(const QLineSeries& 
 bool DebugWindow::computeChartByCriteria(std::string name,
                                          uint32_t offset,
                                          DataSize size,
+                                         uint32_t len,
                                          DataType type,
                                          bool toHostEndian,
                                          uint64_t mask,
@@ -291,7 +313,7 @@ bool DebugWindow::computeChartByCriteria(std::string name,
                                          double amplitudeMax)
 {
     bool res = false;
-    SeriesFromOffset(offset, size, type, toHostEndian, mask, shift, ratio);
+    SeriesFromOffset(offset, size, len, type, toHostEndian, mask, shift, ratio);
 
     std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series[offset]);
     if (tmp.size() != 0)
@@ -381,6 +403,7 @@ void DebugWindow::updateChart(std::string name)
     QString status = "";
 
     DataSize size = DataSize::e_64;
+    uint32_t len = 0;
     uint32_t offset = 0;
     DataType type = DataType::e_float;
     bool toHostEndian = false;
@@ -394,19 +417,22 @@ void DebugWindow::updateChart(std::string name)
     {
         if (variables.find(currentName) == variables.end())
         {
-            size = DataSize::e_64;
-            offset = 0;
-            type = DataType::e_float;
-            toHostEndian = false;
-            mask = 0xFFFFFFFFFFFFFFFF;
-            shift = 0;
-            ratio = 1.0;
+            name = ui->variables->currentText().toStdString();
+            size = stringDataSize.at(ui->size->currentText().toStdString());
+            len = ui->len->value();
+            type = stringDataType.at(ui->type->currentText().toStdString());
+            toHostEndian = (ui->endian->checkState() == Qt::CheckState::Checked)?true:false;
+            offset = ui->offset->value();
+            mask = ui->mask->text().toInt(nullptr, 16);
+            shift = ui->shift->value();
+            ratio = ui->ratio->value();
         }
         else
         {
             varDef_t var = variables.at(currentName);
             offset = var.offset;
             size = var.size;
+            len = var.len;
             type = var.type;
             toHostEndian = var.endian == DataEndian::e_host?true:false;
             mask = var.mask;
@@ -414,7 +440,7 @@ void DebugWindow::updateChart(std::string name)
             ratio = var.ratio;
         }
 
-        SeriesFromOffset(offset, size, type, toHostEndian, mask, shift, ratio);
+        SeriesFromOffset(offset, size, len, type, toHostEndian, mask, shift, ratio);
         QLineSeries *serie = series[offset];
 
         if (!hasSerieInChart(chart, serie))
@@ -441,18 +467,23 @@ void DebugWindow::updateChart(std::string name)
             else
                 status = "Please select a variable or an offset";
         }
+        else
+        {
+            if (serie->count() > 1)
+                status += currentName + ": " + QString::number(serie->at(serie->count() - 1).y(), 'g', 6).toStdString() + " ";
+        }
     }
 
     if (names.size() == 1)
     {
-        ui->variables->setCurrentText(name.c_str());
-        ui->offset->setValue(offset);
-        ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
-        ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
-        ui->endian->setCheckState(toHostEndian?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
-        ui->mask->setText(QString::number(mask, 16));
-        ui->shift->setValue(shift);
-        ui->ratio->setValue(ratio);
+        // ui->variables->setCurrentText(name.c_str());
+        // ui->offset->setValue(offset);
+        // ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
+        // ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
+        // ui->endian->setCheckState(toHostEndian?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
+        // ui->mask->setText(QString::number(mask, 16));
+        // ui->shift->setValue(shift);
+        // ui->ratio->setValue(ratio);
     }
     else
         ui->statusBar->showMessage(status);
@@ -500,18 +531,10 @@ void DebugWindow::on_offset_valueChanged(int offset)
 {
     if (!ready)
         return;
-    std::string name = ui->variables->currentText().toStdString();
+    std::string name = "new ...";
     if (findByOffset(offset, variables).length() != 0)
-    {
         name = findByOffset(offset, variables);
-        ui->variables->setCurrentText(name.c_str());
-        //        updateChart(name);
-    }
-    else
-    {
-        name = "new ...";
-        //        updateChart(name);
-    }
+    ui->variables->setCurrentText(name.c_str());
 }
 
 void DebugWindow::on_type_currentTextChanged(const QString &typeStr)
@@ -631,6 +654,7 @@ void DebugWindow::on_autoSearch_clicked()
     double ampMax = ui->ampMax->value();
     std::string name = "autoDetected";
     DataSize size = stringDataSize.at(ui->size->currentText().toStdString());
+    uint32_t len = ui->len->value();
     DataType type = stringDataType.at(ui->type->currentText().toStdString());
     bool toHostEndian = (ui->endian->checkState() == Qt::CheckState::Checked)?true:false;
     uint64_t mask = ui->mask->text().toInt(nullptr, 16);
@@ -641,7 +665,7 @@ void DebugWindow::on_autoSearch_clicked()
     while (!found)
     {
         currentOffset++;
-        found = computeChartByCriteria(name, currentOffset, size, type, toHostEndian, mask, shift, ratio, diversityMin, min, max, ampMin, ampMax);
+        found = computeChartByCriteria(name, currentOffset, size, len, type, toHostEndian, mask, shift, ratio, diversityMin, min, max, ampMin, ampMax);
         if (currentOffset >= packetSize)
             break;
     }
@@ -649,5 +673,14 @@ void DebugWindow::on_autoSearch_clicked()
         updateChart(name);
     else
         ui->statusBar->showMessage("No relevant candidate found.");
+}
+
+
+void DebugWindow::on_len_valueChanged(int len)
+{
+    if (!ready)
+        return;
+    std::string name = ui->variables->currentText().toStdString();
+    variables[name].len = len;
 }
 

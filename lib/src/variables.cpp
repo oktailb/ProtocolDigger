@@ -48,17 +48,28 @@ void extractVariablesFromConfiguration(std::map<std::string, std::string> &confi
             DataType type = stringDataType.at(tokensVal[ConfigFields::e_type]);
             DataSize size = DataSize::e_custom;
             uint32_t len = 0;
-            if (type != DataType::e_string)
-                size  = stringDataSize.at(tokensVal[ConfigFields::e_size]);
-            else {
+            uint64_t mask = 0;
+            uint8_t rshift = 0;
+            double ratio = 0.0;
+            DataEndian endian = DataEndian::e_network;
+            switch (type)
+            {
+            case DataType::e_sint:
+            case DataType::e_string:
+            {
                 len  = std::stoi(tokensVal[ConfigFields::e_size]);
+                break;
             }
-            tolower(tokensVal[ConfigFields::e_mask]);
-            uint64_t mask = std::stoul((tokensVal[ConfigFields::e_mask]), 0, 16);
-            uint8_t rshift = std::stoi(tokensVal[ConfigFields::e_rshift]);
-            double ratio = std::stof(tokensVal[ConfigFields::e_ratio]);
-
-            DataEndian endian = stringDataEndian.at(tokensVal[ConfigFields::e_endian]);
+            default:
+            {
+                size  = stringDataSize.at(tokensVal[ConfigFields::e_size]);
+                tolower(tokensVal[ConfigFields::e_mask]);
+                mask = std::stoul((tokensVal[ConfigFields::e_mask]), 0, 16);
+                rshift = std::stoi(tokensVal[ConfigFields::e_rshift]);
+                ratio = std::stof(tokensVal[ConfigFields::e_ratio]);
+                endian = stringDataEndian.at(tokensVal[ConfigFields::e_endian]);
+            }
+            }
 
             variables[name] = {offset, size, len, type, endian, mask, rshift, ratio};
         }

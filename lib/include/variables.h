@@ -8,11 +8,12 @@
 
 enum ConfigFields {e_offset, e_type, e_size, e_endian, e_mask, e_rshift, e_ratio};
 
-enum DataType {e_int, e_uint, e_float, e_string};
+enum DataType {e_int, e_uint, e_float, e_string, e_sint};
 
 static std::unordered_map<std::string,DataType> const stringDataType =
     {
         {"string",  DataType::e_string},
+        {"sint",    DataType::e_sint},
         {"float",   DataType::e_float},
         {"int",     DataType::e_int},
         {"uint",    DataType::e_uint}
@@ -20,6 +21,7 @@ static std::unordered_map<std::string,DataType> const stringDataType =
 
 static std::unordered_map<DataType, std::string> const intDataType =
     {
+        {DataType::e_sint,   "sint"},
         {DataType::e_string, "string"},
         {DataType::e_float,  "float" },
         {DataType::e_int,    "int"   },

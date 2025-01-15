@@ -217,6 +217,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="lenLabel">
+        <property name="text">
+         <string>Len</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="len"/>
+      </item>
+      <item>
        <widget class="QCheckBox" name="endian">
         <property name="maximumSize">
          <size>

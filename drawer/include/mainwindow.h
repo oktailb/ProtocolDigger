@@ -38,13 +38,15 @@ private slots:
     void on_endian_toggled(bool checked);
     void on_autoSearch_clicked();
 
+    void on_len_valueChanged(int arg1);
+
 private:
     Ui::DebugWindow *ui;
     void fillVariables(std::map<std::string, varDef_t> &variables);
-    void SeriesFromOffset(uint32_t offset, uint32_t size, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio);
+    void SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio);
     bool computeChartByCriteria(std::string name,
                                 uint32_t offset,
-                                DataSize size,
+                                DataSize size, uint32_t len,
                                 DataType type,
                                 bool toHostEndian,
                                 uint64_t mask,
