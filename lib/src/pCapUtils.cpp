@@ -6,28 +6,27 @@
 #include <thread>
 #include <unistd.h>
 
-int configureSocket(const std::string& address, uint16_t port, uint64_t packetLen, bool serverMode, struct sockaddr_in *client_addr)
+int configureSocket(const std::string& address, uint16_t port, uint64_t packetLen, bool serverMode, struct sockaddr_in *sock_addr)
 {
     int sockfd;
-    struct sockaddr_in server_addr;
     PacketData *buffer = new PacketData();
     socklen_t addr_size;
     int n;
 
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sockfd < 0){
         perror("[-]socket error");
         exit(1);
     }
 
-    memset(&server_addr, '\0', sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(port);
-    server_addr.sin_addr.s_addr = inet_addr(address.c_str());
+    memset(sock_addr, '\0', sizeof(*sock_addr));
+    sock_addr->sin_family = AF_INET;
+    sock_addr->sin_port = htons(port);
+    sock_addr->sin_addr.s_addr = inet_addr(address.c_str());
 
     if (serverMode)
     {
-        n = bind(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr));
+        n = bind(sockfd, (struct sockaddr*)sock_addr, sizeof(*sock_addr));
         if (n < 0) {
             perror("[-]bind error");
             exit(1);
@@ -36,18 +35,18 @@ int configureSocket(const std::string& address, uint16_t port, uint64_t packetLe
         buffer->len = packetLen;
         buffer->payload.reserve(buffer->len);
 
-        addr_size = sizeof(client_addr);
+        addr_size = sizeof(sock_addr);
         // Wait for a client connexion ...
         std::cerr << "Waiting for incoming connexion on port " << port <<  "..." << std::endl;
-        recvfrom(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)client_addr, &addr_size);
-        std::cerr << "Client connected " << printIP(client_addr->sin_addr.s_addr) << " !" << std::endl;
+        recvfrom(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)sock_addr, &addr_size);
+        std::cerr << "Client connected " << printIP(sock_addr->sin_addr.s_addr) << " !" << std::endl;
         std::cerr << buffer->payload.data() << std::endl;
     }
     else
     {
         std::cerr << "Knocking door on " << address << ":"  << port <<  "..." << std::endl;
-        sendto(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)&server_addr, sizeof(server_addr));
-        std::cerr << "Connected granted to " << printIP(client_addr->sin_addr.s_addr) << " !" << std::endl;
+        sendto(sockfd, buffer->payload.data(), 0, 0, (struct sockaddr*)sock_addr, sizeof(*sock_addr));
+        std::cerr << "Connected granted to " << printIP(sock_addr->sin_addr.s_addr) << " !" << std::endl;
     }
     delete buffer;
 
