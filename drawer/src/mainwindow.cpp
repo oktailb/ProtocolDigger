@@ -258,7 +258,7 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
                 std::cerr << offset << " : " << tmpStr << " -> 0x";
                 int i = 0;
                 while (i < len)
-                    std::cerr << std::hex << (int)(tmpStr[i++]);
+                    std::cerr << std::hex << (uint8_t)(tmpStr[i++]);
                 std::cerr << std::endl;
             }
             serie->append(timestamp, tmp);
@@ -543,7 +543,6 @@ void DebugWindow::on_type_currentTextChanged(const QString &typeStr)
         return;
     std::string name = ui->variables->currentText().toStdString();
     variables[name].type = stringDataType.at(typeStr.toStdString());
-    //    updateChart(name);
 }
 
 
@@ -553,8 +552,6 @@ void DebugWindow::on_size_currentTextChanged(const QString &sizeStr)
         return;
     std::string name = ui->variables->currentText().toStdString();
     variables[name].size = stringDataSize.at(sizeStr.toStdString());
-
-    //    updateChart(name);
 }
 
 void DebugWindow::on_mask_textChanged(const QString &mask)
@@ -563,8 +560,6 @@ void DebugWindow::on_mask_textChanged(const QString &mask)
         return;
     std::string name = ui->variables->currentText().toStdString();
     variables[name].mask = ui->mask->text().toULong(nullptr, 16);;
-
-    //updateChart(name);
 }
 
 void DebugWindow::on_shift_valueChanged(int shift)
@@ -573,8 +568,6 @@ void DebugWindow::on_shift_valueChanged(int shift)
         return;
     std::string name = ui->variables->currentText().toStdString();
     variables[name].shift = shift;
-
-    //updateChart(name);
 }
 
 void DebugWindow::on_ratio_valueChanged(double ratio)
@@ -583,8 +576,6 @@ void DebugWindow::on_ratio_valueChanged(double ratio)
         return;
     std::string name = ui->variables->currentText().toStdString();
     variables[name].ratio = ratio;
-
-    //updateChart(name);
 }
 
 
@@ -594,6 +585,7 @@ void DebugWindow::on_applyButton_clicked()
         return;
     std::string name = ui->variables->currentText().toStdString();
     DataSize size = stringDataSize.at(ui->size->currentText().toStdString());
+    uint32_t len = ui->len->value();
     DataType type = stringDataType.at(ui->type->currentText().toStdString());
     bool toHostEndian = (ui->endian->checkState() == Qt::CheckState::Checked)?true:false;
     uint32_t offset = ui->offset->text().toInt(nullptr, 16);
@@ -605,14 +597,25 @@ void DebugWindow::on_applyButton_clicked()
 
     out += "0x" + QString::number(offset, 16) + ",";
     out += intDataType.at(type) + ",";
-    out += intDataSize.at(size) + ",";
-    if (type != DataType::e_string)
+    switch (type)
     {
+    case DataType::e_string:
+    case DataType::e_sint:
+    {
+        out += QString::number(len);
+        break;
+    }
+    default:
+    {
+        out += intDataSize.at(size) + ",";
         out += QString(toHostEndian?"host":"network") + ",";
         out += "0x" + QString::number(mask, 16) + ",";
         out += QString::number(shift) + ",";
         out += QString::number(ratio);
+        break;
     }
+    }
+
     configuration["Vars/" + name] = out.toStdString();
     saveConfiguration(configuration, "config.ini");
 }
