@@ -11,18 +11,22 @@
 <!-- 0x0001 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x0002 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x0003 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
+
 <!-- 0x0004 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x0005 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x0006 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x0007 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
+
 <!-- 0x0008 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x0009 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x000a --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x000b --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
+
 <!-- 0x000c --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x000d --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x000e --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x000f --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
+
 <!-- 0x0010 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
 <!-- 0x0011 --><chunk> <name>pad11</name><type>bool</type><node>/padding</node> </chunk>
         <!-- 0x0012 -->
@@ -36,6 +40,7 @@
             <name>indicated speed (kt)</name>
             <type>double</type>
             <node>/velocities/airspeed-kt</node>
+            <factor>0.5399568</factor>  <!-- km to kt -->
         </chunk>
         <!-- 0x0022 -->
         <chunk>
@@ -56,6 +61,7 @@
             <name>altitude</name>
             <type>double</type>
             <node>/position/altitude-ft</node>
+            <factor>0.3048</factor><!-- m to ft -->
         </chunk>
 
 <!-- 0x0000 --><chunk> <name>pad0</name><type>int</type><node>/padding</node> </chunk>
