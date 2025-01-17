@@ -40,6 +40,8 @@ private slots:
 
     void on_len_valueChanged(int arg1);
 
+    void on_fixRange_clicked();
+
 private:
     Ui::DebugWindow *ui;
     void fillVariables(std::map<std::string, varDef_t> &variables);
@@ -53,7 +55,7 @@ private:
                                 uint8_t shift,
                                 double ratio, double diversityMin, double minVal, double maxVal, double amplitudeMin, double amplitudeMax);
     void updateChart(std::string name);
-
+    void saveFGFSGenericProtocol(const std::map<std::string, std::string>& keyValuePairs, const std::string& filename);
     std::map<std::string, varDef_t> variables;
     ThreadSafeQueue &queue;
     std::deque<PacketData*> queueData;

@@ -166,7 +166,8 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
                 memcpy(&tmp, mapper + offset, sizeof(float));
                 if (toHostEndian) ntoh<float>(tmp);
                 if (!std::isinf(tmp / ratio))
-                    serie->append(timestamp, tmp / ratio);
+                    if (!std::isnan(tmp / ratio))
+                        serie->append(timestamp, tmp / ratio);
             }
             break;
             case DataSize::e_64: {
@@ -174,7 +175,8 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
                 memcpy(&tmp, mapper + offset, sizeof(double));
                 if (toHostEndian) ntoh<double>(tmp);
                 if (!std::isinf(tmp / ratio))
-                    serie->append(timestamp, tmp / ratio);
+                    if (!std::isnan(tmp / ratio))
+                        serie->append(timestamp, tmp / ratio);
             }
             break;
             default:
@@ -314,7 +316,7 @@ bool DebugWindow::computeChartByCriteria(std::string name,
 {
     bool res = false;
     SeriesFromOffset(offset, size, len, type, toHostEndian, mask, shift, ratio);
-
+    pktIndex[offset] = 0;
     std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series[offset]);
     if (tmp.size() != 0)
     {
@@ -446,7 +448,13 @@ void DebugWindow::updateChart(std::string name)
         if (!hasSerieInChart(chart, serie))
         {
             chart->addSeries(serie);
-            serie->setName(currentName.c_str());
+            QString serieName = QString(currentName.c_str())
+                                + " ("
+                                + QString(intDataType.at(type).c_str())
+                                + " "
+                                + QString(intDataSize.at(size).c_str())
+                                + ")";
+            serie->setName(serieName);
         }
 
         if (!isSerieVisibleInChart(chart, serie))
@@ -531,10 +539,10 @@ void DebugWindow::on_offset_valueChanged(int offset)
 {
     if (!ready)
         return;
-    std::string name = "new ...";
+    QString name = "unknown on 0x" + QString::number(offset, 16);
     if (findByOffset(offset, variables).length() != 0)
-        name = findByOffset(offset, variables);
-    ui->variables->setCurrentText(name.c_str());
+        name = QString(findByOffset(offset, variables).c_str());
+    ui->variables->setCurrentText(name);
 }
 
 void DebugWindow::on_type_currentTextChanged(const QString &typeStr)
@@ -579,6 +587,83 @@ void DebugWindow::on_ratio_valueChanged(double ratio)
 }
 
 
+void DebugWindow::saveFGFSGenericProtocol(const std::map<std::string, std::string>& keyValuePairs, const std::string& filename)
+{
+    std::ofstream file(filename);
+
+    if (!file.is_open()) {
+        std::cout << "Erreur : Impossible d'ouvrir le fichier " << filename << " pour sauvegarder la configuration." << std::endl;
+        return;
+    }
+    file << "<?xml version=\"1.0\"?>\n";
+    file << "<PropertyList>\n";
+    file << "   <generic>\n";
+    file << "      <input>\n";
+    file << "      <binary_mode>true</binary_mode>\n";
+    file << "      <binary_footer>length</binary_footer>\n";
+    file << "      <byte_order>host</byte_order>\n";
+
+    std::map<uint32_t, QStringList> base;
+    for (const auto& entry : keyValuePairs)
+    {
+        QString qentryk = QString(entry.first.c_str());
+        QString qentryv = QString(entry.second.c_str());
+
+        // yaw=0x12,float,64,network,0xffffffffffffffff,0,1
+        if (qentryk.startsWith("Vars/"))
+        {
+            QStringList id = qentryk.split(",");
+            QStringList params = qentryv.split(",");
+            uint32_t offset = params[0].toInt(nullptr,16);
+            params[0] = id[0];
+            base[offset] = params;
+        }
+    }
+    int32_t currentOffset = 0;
+    for (auto item : base)
+    {
+        int32_t offset = item.first;
+        QStringList params = item.second;
+        int32_t countInt = (offset - currentOffset) / 4;
+        int32_t countBool = (offset - currentOffset) % 4;
+        while (countInt > 0)
+        {
+            file << "           <chunk><name>0x" << std::hex << currentOffset << std::dec << "</name><type>int</type><node>/padding</node> </chunk>\n";
+            currentOffset += 4;
+            countInt--;
+        }
+        while (countBool > 0)
+        {
+            file << "           <chunk><name>0x" << std::hex << currentOffset++ << std::dec << "</name><type>bool</type><node>/padding</node> </chunk>\n";
+            countBool--;
+        }
+        file << "           <chunk><!-- 0x" << std::hex << offset << std::dec << " -->\n";
+        file << "               <name>" << params[0].toStdString() << "</name>\n";
+        std::string type = params[1].toStdString();
+        int size = params[2].toInt() / 8;
+        if (params[1].compare("float") == 0)
+        {
+            if (params[2].compare("32") == 0)
+                type = "float";
+            else
+                type = "double";
+        }
+        file << "               <type>" << type << "</type>\n";
+        file << "               <node>" << "params[7].toStdString()" << "</node>\n";
+        file << "           </chunk>\n";
+        currentOffset += size;
+    }
+
+    while (currentOffset < packetSize)
+        file << "           <chunk><name>0x" << std::hex << currentOffset++ << std::dec << "</name><type>bool</type><node>/padding</node> </chunk>\n";
+    file << "       </input>\n";
+    file << "   </generic>\n";
+    file << "</PropertyList>\n";
+
+    file.close();
+}
+
+
 void DebugWindow::on_applyButton_clicked()
 {
     if (!ready)
@@ -618,6 +703,7 @@ void DebugWindow::on_applyButton_clicked()
 
     configuration["Vars/" + name] = out.toStdString();
     saveConfiguration(configuration, "config.ini");
+    saveFGFSGenericProtocol(configuration, "fgfs_invis_saved.xml");
 }
 
 void DebugWindow::on_endian_toggled(bool checked)
@@ -668,6 +754,7 @@ void DebugWindow::on_autoSearch_clicked()
     while (!found)
     {
         currentOffset++;
+        ui->statusBar->showMessage("Offset " + QString::number(currentOffset));
         found = computeChartByCriteria(name, currentOffset, size, len, type, toHostEndian, mask, shift, ratio, diversityMin, min, max, ampMin, ampMax);
         if (currentOffset >= packetSize)
             break;
@@ -685,5 +772,18 @@ void DebugWindow::on_len_valueChanged(int len)
         return;
     std::string name = ui->variables->currentText().toStdString();
     variables[name].len = len;
+}
+
+
+void DebugWindow::on_fixRange_clicked()
+{
+    uint32_t currentOffset = ui->offset->value();
+    std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series[currentOffset]);
+    if (tmp.size() != 0)
+    {
+        double max = *std::max_element(tmp.begin(), tmp.end());
+        double min = *std::min_element(tmp.begin(), tmp.end());
+        ui->chart->chart()->axes(Qt::Vertical)[0]->setRange(min, max);
+    }
 }
 
