@@ -422,10 +422,10 @@
       <item>
        <widget class="QSpinBox" name="minVal">
         <property name="minimum">
-         <number>-999999999</number>
+         <number>-2147483647</number>
         </property>
         <property name="maximum">
-         <number>999999999</number>
+         <number>2147483647</number>
         </property>
        </widget>
       </item>
@@ -439,10 +439,10 @@
       <item>
        <widget class="QSpinBox" name="maxVal">
         <property name="minimum">
-         <number>-999999999</number>
+         <number>-2147483647</number>
         </property>
         <property name="maximum">
-         <number>999999999</number>
+         <number>2147483647</number>
         </property>
        </widget>
       </item>
@@ -456,7 +456,7 @@
       <item>
        <widget class="QSpinBox" name="ampMin">
         <property name="maximum">
-         <number>999999999</number>
+         <number>2147483647</number>
         </property>
        </widget>
       </item>
@@ -470,7 +470,7 @@
       <item>
        <widget class="QSpinBox" name="ampMax">
         <property name="maximum">
-         <number>999999999</number>
+         <number>2147483647</number>
         </property>
        </widget>
       </item>
@@ -478,6 +478,13 @@
        <widget class="QPushButton" name="autoSearch">
         <property name="text">
          <string>Search</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="fixRange">
+        <property name="text">
+         <string>Fix range</string>
         </property>
        </widget>
       </item>
