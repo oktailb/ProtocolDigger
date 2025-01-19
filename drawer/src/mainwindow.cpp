@@ -614,7 +614,7 @@ void DebugWindow::saveFGFSGenericProtocol(const std::map<std::string, std::strin
         {
             QStringList id = qentryk.split(",");
             QStringList params = qentryv.split(",");
-            uint32_t offset = params[0].toInt(nullptr,16);
+            uint32_t offset = params[ConfigFields::e_offset].toInt(nullptr,16);
             params[0] = id[0];
             base[offset] = params;
         }
@@ -639,17 +639,18 @@ void DebugWindow::saveFGFSGenericProtocol(const std::map<std::string, std::strin
         }
         file << "           <chunk><!-- 0x" << std::hex << offset << std::dec << " -->\n";
         file << "               <name>" << params[0].toStdString() << "</name>\n";
-        std::string type = params[1].toStdString();
-        int size = params[2].toInt() / 8;
-        if (params[1].compare("float") == 0)
+        std::string type = params[ConfigFields::e_type].toStdString();
+        int size = params[ConfigFields::e_size].toInt() / 8;
+        if (type.compare("float") == 0)
         {
-            if (params[2].compare("32") == 0)
+            if (size == 4)
                 type = "float";
             else
                 type = "double";
         }
         file << "               <type>" << type << "</type>\n";
-        file << "               <node>" << "params[7].toStdString()" << "</node>\n";
+        if (params.size() > ConfigFields::e_customStr)
+            file << "               <node>" << params[ConfigFields::e_customStr].toStdString() << "</node>\n";
         file << "           </chunk>\n";
         currentOffset += size;
     }

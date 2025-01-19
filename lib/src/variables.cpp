@@ -52,12 +52,16 @@ void extractVariablesFromConfiguration(std::map<std::string, std::string> &confi
             uint8_t rshift = 0;
             double ratio = 0.0;
             DataEndian endian = DataEndian::e_network;
+            std::string custom = "";
+
             switch (type)
             {
             case DataType::e_sint:
             case DataType::e_string:
             {
                 len  = std::stoi(tokensVal[ConfigFields::e_size]);
+                if (tokensVal.size() > ConfigFields::e_mask)
+                    custom = tokensVal[ConfigFields::e_mask];
                 break;
             }
             default:
@@ -68,10 +72,12 @@ void extractVariablesFromConfiguration(std::map<std::string, std::string> &confi
                 rshift = std::stoi(tokensVal[ConfigFields::e_rshift]);
                 ratio = std::stof(tokensVal[ConfigFields::e_ratio]);
                 endian = stringDataEndian.at(tokensVal[ConfigFields::e_endian]);
+                if (tokensVal.size() > ConfigFields::e_customStr)
+                    custom = tokensVal[ConfigFields::e_customStr];
             }
             }
 
-            variables[name] = {offset, size, len, type, endian, mask, rshift, ratio};
+            variables[name] = {offset, size, len, type, endian, mask, rshift, ratio, custom};
         }
     }
 }

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-enum ConfigFields {e_offset, e_type, e_size, e_endian, e_mask, e_rshift, e_ratio};
+enum ConfigFields {e_offset, e_type, e_size, e_endian, e_mask, e_rshift, e_ratio, e_customStr};
 
 enum DataType {e_int, e_uint, e_float, e_string, e_sint};
 
@@ -71,6 +71,7 @@ typedef struct  varDef_s {
     uint64_t    mask;
     uint8_t     shift;
     double      ratio;
+    std::string custom;
 } varDef_t;
 
 void extractVariablesFromConfiguration(std::map<std::string, std::string> &configuration, std::map<std::string, varDef_t> &variables);
