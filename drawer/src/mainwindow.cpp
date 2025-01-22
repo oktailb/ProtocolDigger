@@ -46,6 +46,7 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     , timerId(0)
     , packetSize(0)
     , ready(false)
+    , offsetChange(false)
 {
     extractVariablesFromConfiguration(configuration, variables);
     chart = new QChart();
@@ -87,25 +88,6 @@ void DebugWindow::timerEvent(QTimerEvent *event)
     updateChart(ui->variables->currentText().toStdString());
     chart->createDefaultAxes();
     ui->chart->repaint();
-}
-
-uint64_t timeval_diff(struct timeval *end_time, struct timeval *start_time)
-{
-    struct timeval difference;
-
-    difference.tv_sec =end_time->tv_sec -start_time->tv_sec ;
-    difference.tv_usec=end_time->tv_usec-start_time->tv_usec;
-
-    /* Using while instead of if below makes the code slightly more robust. */
-
-    while(difference.tv_usec<0)
-    {
-        difference.tv_usec+=1000000;
-        difference.tv_sec -=1;
-    }
-
-    return 1000000LL * difference.tv_sec + difference.tv_usec;
-
 }
 
 void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio)
@@ -165,18 +147,18 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
                 float tmp;
                 memcpy(&tmp, mapper + offset, sizeof(float));
                 if (toHostEndian) ntoh<float>(tmp);
-                if (!std::isinf(tmp / ratio))
-                    if (!std::isnan(tmp / ratio))
-                        serie->append(timestamp, tmp / ratio);
+                if (!std::isinf(tmp * ratio))
+                    if (!std::isnan(tmp * ratio))
+                        serie->append(timestamp, tmp * ratio);
             }
             break;
             case DataSize::e_64: {
                 double tmp;
                 memcpy(&tmp, mapper + offset, sizeof(double));
                 if (toHostEndian) ntoh<double>(tmp);
-                if (!std::isinf(tmp / ratio))
-                    if (!std::isnan(tmp / ratio))
-                        serie->append(timestamp, tmp / ratio);
+                if (!std::isinf(tmp * ratio))
+                    if (!std::isnan(tmp * ratio))
+                        serie->append(timestamp, tmp * ratio);
             }
             break;
             default:
@@ -193,21 +175,21 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
                 int16_t tmp;
                 memcpy(&tmp, mapper + offset, sizeof(int16_t));
                 if (toHostEndian) tmp = ntoh<int16_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) / ratio);
+                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
             }
             break;
             case DataSize::e_32: {
                 int32_t tmp;
                 memcpy(&tmp, mapper + offset, sizeof(int32_t));
                 if (toHostEndian) tmp = ntoh<int32_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) / ratio);
+                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
             }
             break;
             case DataSize::e_64: {
                 int64_t tmp;
                 memcpy(&tmp, mapper + offset, sizeof(int64_t));
                 if (toHostEndian) tmp = ntoh<int64_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) / ratio);
+                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
             }
             break;
             default:
@@ -224,21 +206,21 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
                 uint16_t tmp;
                 memcpy(&tmp, mapper + offset, sizeof(uint16_t));
                 if (toHostEndian) tmp = ntoh<uint16_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) / ratio);
+                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
             }
             break;
             case DataSize::e_32: {
                 uint32_t tmp;
                 memcpy(&tmp, mapper + offset, sizeof(uint32_t));
                 if (toHostEndian) tmp = ntoh<int32_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) / ratio);
+                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
             }
             break;
             case DataSize::e_64: {
                 uint64_t tmp;
                 memcpy(&tmp, mapper + offset, sizeof(uint64_t));
                 if (toHostEndian) tmp = ntoh<uint64_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) / ratio);
+                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
             }
             break;
             default:
@@ -315,7 +297,9 @@ bool DebugWindow::computeChartByCriteria(std::string name,
                                          double amplitudeMax)
 {
     bool res = false;
-    SeriesFromOffset(offset, size, len, type, toHostEndian, mask, shift, ratio);
+    if (series.find(offset) == series.end())
+        SeriesFromOffset(offset, size, len, type, toHostEndian, mask, shift, ratio);
+
     pktIndex[offset] = 0;
     std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series[offset]);
     if (tmp.size() != 0)
@@ -462,6 +446,19 @@ void DebugWindow::updateChart(std::string name)
 
         if (names.size() == 1)
         {
+            ready = false;
+            if (offsetChange == false)
+            {
+                ui->offset->setValue(offset);
+                ui->size->setCurrentText(intDataSize.at(size).c_str());
+                ui->len->setValue(len);
+                ui->type->setCurrentText(intDataType.at(type).c_str());
+                ui->endian->setCheckState(toHostEndian?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
+                ui->mask->setText(QString::number(mask, 16));
+                ui->shift->setValue(shift);
+                ui->ratio->setValue(ratio);
+            }
+            ready = true;
             std::vector<double> tmp = qLineSeriesYToStdVector<double>(*serie);
             if (tmp.size() != 0)
             {
@@ -469,11 +466,14 @@ void DebugWindow::updateChart(std::string name)
                 double min = *std::min_element(tmp.begin(), tmp.end());
                 double e = entropy<double>(tmp);
                 double d = diversity<double>(tmp);
+                if (offsetChange == true)
+                    if (ui->chart->chart()->axes(Qt::Vertical).size())
+                        ui->chart->chart()->axes(Qt::Vertical)[0]->setRange(min, max);
 
                 status += "Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max);
             }
             else
-                status = "Please select a variable or an offset";
+                status = "No data";
         }
         else
         {
@@ -524,6 +524,8 @@ void DebugWindow::on_variables_currentIndexChanged(int index)
     ui->shift->setValue(shift);
     ui->ratio->setValue(ratio);
 
+    offsetChange = false;
+
     //updateChart(name);
 }
 
@@ -532,6 +534,18 @@ void DebugWindow::on_variables_globalCheckStateChanged(int index)
     if (!ready)
         return;
     std::string nameList = ui->variables->currentText().toStdString();
+    bool enable =  (ui->variables->getCheckedIndex().size() == 1);
+    ui->ratio->setEnabled(enable);
+    ui->mask->setEnabled(enable);
+    ui->shift->setEnabled(enable);
+    ui->type->setEnabled(enable);
+    ui->endian->setEnabled(enable);
+    ui->offset->setEnabled(enable);
+    ui->len->setEnabled(enable);
+    ui->size->setEnabled(enable);
+
+    offsetChange = false;
+
     //updateChart(nameList);
 }
 
@@ -539,6 +553,7 @@ void DebugWindow::on_offset_valueChanged(int offset)
 {
     if (!ready)
         return;
+    offsetChange = true;
     QString name = "unknown on 0x" + QString::number(offset, 16);
     if (findByOffset(offset, variables).length() != 0)
         name = QString(findByOffset(offset, variables).c_str());
@@ -583,9 +598,20 @@ void DebugWindow::on_ratio_valueChanged(double ratio)
     if (!ready)
         return;
     std::string name = ui->variables->currentText().toStdString();
-    variables[name].ratio = ratio;
-}
 
+    std::cerr << name << std::endl;
+    std::cerr << ratio << std::endl;
+    variables[name].ratio = ratio;
+    uint32_t offset = variables[name].offset;
+    ready = false;
+    uint32_t last = series[offset]->count() - 1;
+    series[offset]->removePoints(0, last);
+    series[offset]->clear();
+    delete series[offset];
+    series[offset] = new QLineSeries();
+    pktIndex[offset] = 1;
+    ready = true;
+}
 
 void DebugWindow::saveFGFSGenericProtocol(const std::map<std::string, std::string>& keyValuePairs, const std::string& filename)
 {
@@ -615,6 +641,11 @@ void DebugWindow::saveFGFSGenericProtocol(const std::map<std::string, std::strin
             QStringList id = qentryk.split(",");
             QStringList params = qentryv.split(",");
             uint32_t offset = params[ConfigFields::e_offset].toInt(nullptr,16);
+            QString type = params[ConfigFields::e_type];
+            if (type == "string")
+                continue;
+            if (type == "sint")
+                continue;
             params[0] = id[0];
             base[offset] = params;
         }
@@ -650,7 +681,11 @@ void DebugWindow::saveFGFSGenericProtocol(const std::map<std::string, std::strin
         }
         file << "               <type>" << type << "</type>\n";
         if (params.size() > ConfigFields::e_customStr)
+        {
             file << "               <node>" << params[ConfigFields::e_customStr].toStdString() << "</node>\n";
+            if (std::abs(params[ConfigFields::e_ratio].toDouble() - 1.0) > 0.001)
+                file << "               <factor>" << params[ConfigFields::e_ratio].toStdString() << "</factor>\n";
+        }
         file << "           </chunk>\n";
         currentOffset += size;
     }
@@ -703,8 +738,6 @@ void DebugWindow::on_applyButton_clicked()
     }
 
     configuration["Vars/" + name] = out.toStdString();
-    saveConfiguration(configuration, "config.ini");
-    saveFGFSGenericProtocol(configuration, "fgfs_invis_saved.xml");
 }
 
 void DebugWindow::on_endian_toggled(bool checked)
@@ -755,7 +788,7 @@ void DebugWindow::on_autoSearch_clicked()
     while (!found)
     {
         currentOffset++;
-        ui->statusBar->showMessage("Offset " + QString::number(currentOffset));
+        ui->statusBar->showMessage("Offset " + QString::number(currentOffset, 16));
         found = computeChartByCriteria(name, currentOffset, size, len, type, toHostEndian, mask, shift, ratio, diversityMin, min, max, ampMin, ampMax);
         if (currentOffset >= packetSize)
             break;
@@ -775,8 +808,7 @@ void DebugWindow::on_len_valueChanged(int len)
     variables[name].len = len;
 }
 
-
-void DebugWindow::on_fixRange_clicked()
+void DebugWindow::on_actionFix_chart_range_triggered()
 {
     uint32_t currentOffset = ui->offset->value();
     std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series[currentOffset]);
@@ -786,5 +818,17 @@ void DebugWindow::on_fixRange_clicked()
         double min = *std::min_element(tmp.begin(), tmp.end());
         ui->chart->chart()->axes(Qt::Vertical)[0]->setRange(min, max);
     }
+}
+
+
+void DebugWindow::on_actionSave_Configuration_triggered()
+{
+    saveConfiguration(configuration, "config.ini");
+}
+
+
+void DebugWindow::on_actionExport_triggered()
+{
+    saveFGFSGenericProtocol(configuration, "fgfs_invis_saved.xml");
 }
 

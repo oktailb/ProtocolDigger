@@ -40,7 +40,11 @@ private slots:
 
     void on_len_valueChanged(int arg1);
 
-    void on_fixRange_clicked();
+    void on_actionFix_chart_range_triggered();
+
+    void on_actionSave_Configuration_triggered();
+
+    void on_actionExport_triggered();
 
 private:
     Ui::DebugWindow *ui;
@@ -69,5 +73,6 @@ private:
     std::map<uint32_t, uint32_t> pktIndex;
     double timestamp;
     double timeWindowSize;
+    bool offsetChange;
 };
 #endif // MAINWINDOW_H
