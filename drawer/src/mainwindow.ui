@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1316</width>
+    <width>1397</width>
     <height>767</height>
    </rect>
   </property>
@@ -348,6 +348,18 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="decimals">
+         <number>5</number>
+        </property>
+        <property name="singleStep">
+         <double>0.001000000000000</double>
+        </property>
+        <property name="stepType">
+         <enum>QAbstractSpinBox::DefaultStepType</enum>
+        </property>
+        <property name="value">
+         <double>1.000000000000000</double>
+        </property>
        </widget>
       </item>
       <item>
@@ -482,13 +494,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="fixRange">
-        <property name="text">
-         <string>Fix range</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -537,6 +542,129 @@
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1397</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpenPcap"/>
+    <addaction name="actionSpy_Device"/>
+    <addaction name="actionOpen_UDP_Socket"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave_Configuration"/>
+    <addaction name="actionExport"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionFix_chart_range"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionLicence"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>Options</string>
+    </property>
+    <addaction name="actionStream_to_external"/>
+    <addaction name="actionServer_mode"/>
+    <addaction name="actionSet_PCAP_filter"/>
+    <addaction name="actionSelect_network_device"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
+   <addaction name="menuOptions"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <action name="actionOpenPcap">
+   <property name="text">
+    <string>Open PCAP ...</string>
+   </property>
+  </action>
+  <action name="actionSpy_Device">
+   <property name="text">
+    <string>Spy Device ...</string>
+   </property>
+  </action>
+  <action name="actionOpen_UDP_Socket">
+   <property name="text">
+    <string>Connect to UDP ...</string>
+   </property>
+  </action>
+  <action name="actionSave_Configuration">
+   <property name="text">
+    <string>Save Configuration</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export ...</string>
+   </property>
+  </action>
+  <action name="actionFix_chart_range">
+   <property name="text">
+    <string>Fix chart range</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionLicence">
+   <property name="text">
+    <string>Licence</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionStream_to_external">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Stream to external</string>
+   </property>
+  </action>
+  <action name="actionServer_mode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Server mode</string>
+   </property>
+  </action>
+  <action name="actionSet_PCAP_filter">
+   <property name="text">
+    <string>Set PCAP filter</string>
+   </property>
+  </action>
+  <action name="actionSelect_network_device">
+   <property name="text">
+    <string>Select network device</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
