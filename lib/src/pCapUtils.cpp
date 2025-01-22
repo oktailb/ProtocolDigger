@@ -6,6 +6,25 @@
 #include <thread>
 #include <unistd.h>
 
+uint64_t timeval_diff(struct timeval *end_time, struct timeval *start_time)
+{
+    struct timeval difference;
+
+    difference.tv_sec =end_time->tv_sec -start_time->tv_sec ;
+    difference.tv_usec=end_time->tv_usec-start_time->tv_usec;
+
+    /* Using while instead of if below makes the code slightly more robust. */
+
+    while(difference.tv_usec<0)
+    {
+        difference.tv_usec+=1000000;
+        difference.tv_sec -=1;
+    }
+
+    return 1000000LL * difference.tv_sec + difference.tv_usec;
+
+}
+
 int configureSocket(const std::string& address, uint16_t port, uint64_t packetLen, bool serverMode, struct sockaddr_in *sock_addr)
 {
     int sockfd;
@@ -65,13 +84,15 @@ void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queu
 
     std::cerr << "Processing packets ..." << std::endl;
 
-    uint64_t timestamp0 = buffer->ts.tv_sec * 1000000 + buffer->ts.tv_usec;
+    timeval timestamp0 = buffer->ts;
     while (run)
     {
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         run = queue.pop(buffer, std::chrono::milliseconds(200));
-        uint64_t timestamp = buffer->ts.tv_sec * 1000000 + buffer->ts.tv_usec;
-        std::this_thread::sleep_for(std::chrono::microseconds((timestamp - timestamp0)));
+        timeval timestamp = buffer->ts;
         sendto(sockfd, buffer->payload.data(), buffer->len, 0, (struct sockaddr*)&client_addr, sizeof(client_addr));
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        std::this_thread::sleep_for(std::chrono::microseconds(timeval_diff(&timestamp, &timestamp0)) - std::chrono::duration_cast<std::chrono::milliseconds>(end - begin));
         timestamp0 = timestamp;
     }
     std::cerr << "Done." << std::endl;

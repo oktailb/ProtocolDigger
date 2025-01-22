@@ -11,6 +11,7 @@ void read_pcap_file(const std::string& file_name, const std::string& filter_exp,
 void read_device(const std::string& device, const std::string& filter_exp, ThreadSafeQueue& queue);
 void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& queue, uint64_t packetLen, bool serverMode);
 void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queue, uint64_t packetLen, bool serverMode);
+uint64_t timeval_diff(struct timeval *end_time, struct timeval *start_time);
 
 std::string printIP(uint32_t val);
 
