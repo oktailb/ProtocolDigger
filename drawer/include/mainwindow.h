@@ -39,12 +39,13 @@ private slots:
     void on_autoSearch_clicked();
 
     void on_len_valueChanged(int arg1);
-
     void on_actionFix_chart_range_triggered();
-
     void on_actionSave_Configuration_triggered();
-
     void on_actionExport_triggered();
+
+    void on_sliderFrom_valueChanged(int value);
+
+    void on_sliderTo_valueChanged(int value);
 
 private:
     Ui::DebugWindow *ui;

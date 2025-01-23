@@ -64,6 +64,18 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     chart->createDefaultAxes();
     ui->chart->setChart(chart);
     timeWindowSize = std::stof(configuration.at("Input/timeWindowSize"));
+    uint64_t tsSecRef = queue.data()[0]->ts.tv_sec;
+    uint64_t tsSecMax = queue.data()[queue.data().size() - 1]->ts.tv_sec;
+    uint64_t tsDuration = tsSecMax - tsSecRef;
+    uint64_t tsDurationSec = tsDuration % 60;
+    uint64_t tsDurationMin = ((tsDuration - tsDurationSec) / 60) % 60;
+    uint64_t tsDurationHour = tsDurationMin / 60;
+
+    ui->sliderFrom->setMaximum(tsDuration);
+    ui->sliderTo->setMaximum(tsDuration);
+    ui->sliderTo->setValue(tsDuration);
+    ui->timeFrom->setTime(QTime(0, 0, 0, 0));
+    ui->timeTo->setTime(QTime(tsDurationHour, tsDurationMin, tsDurationSec, 0));
     ready = true;
 }
 
@@ -496,8 +508,15 @@ void DebugWindow::updateChart(std::string name)
     else
         ui->statusBar->showMessage(status);
     if (timeWindowSize > 0.001) // this is not an oscilloscope ...
+    {
         if (!ui->chart->chart()->axes(Qt::Horizontal).empty())
             ui->chart->chart()->axes(Qt::Horizontal)[0]->setRange((timestamp > timeWindowSize)?(timestamp - timeWindowSize):0.0, timestamp);
+    }
+    else
+    {
+        if (!ui->chart->chart()->axes(Qt::Horizontal).empty())
+            ui->chart->chart()->axes(Qt::Horizontal)[0]->setRange(ui->sliderFrom->value(), ui->sliderTo->value());
+    }
 
     ready = true;
 }
@@ -830,5 +849,28 @@ void DebugWindow::on_actionSave_Configuration_triggered()
 void DebugWindow::on_actionExport_triggered()
 {
     saveFGFSGenericProtocol(configuration, "fgfs_invis_saved.xml");
+}
+
+void DebugWindow::on_sliderFrom_valueChanged(int value)
+{
+    uint32_t to = ui->sliderTo->value();
+    if (to < value)
+        ui->sliderTo->setValue(value);
+    uint32_t hh = value / 3600;
+    uint32_t mm = (value % 3600) / 60;
+    uint32_t ss = (value % 3600) % 60;
+    ui->timeFrom->setTime(QTime(hh, mm, ss, 0));
+}
+
+
+void DebugWindow::on_sliderTo_valueChanged(int value)
+{
+    uint32_t from = ui->sliderFrom->value();
+    if (from > value)
+        ui->sliderFrom->setValue(value);
+    uint32_t hh = value / 3600;
+    uint32_t mm = (value % 3600) / 60;
+    uint32_t ss = (value % 3600) % 60;
+    ui->timeTo->setTime(QTime(hh, mm, ss, 0));
 }
 
