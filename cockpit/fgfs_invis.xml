@@ -20,7 +20,7 @@
                <name>Vars/speed</name>
                <type>double</type>
                <node>/velocities/mach</node>
-               <factor>.00159776482060938194</factor>
+               <factor>.00157776482060938194</factor>
            </chunk>
            <chunk><!-- 0x22 -->
                <name>Vars/pitch</name>
@@ -32,8 +32,16 @@
                <type>double</type>
                <node>/orientation/roll-deg</node>
            </chunk>
-           <chunk><name>0x32</name><type>bool</type><node>/padding</node> </chunk>
-           <chunk><name>0x33</name><type>bool</type><node>/padding</node> </chunk>
+           <chunk><!-- 0x32 -->
+               <name>Vars/button0</name>
+               <type>bool</type>
+               <node>/buttons/b0</node>
+           </chunk>
+           <chunk><!-- 0x33 -->
+               <name>Vars/button1</name>
+               <type>bool</type>
+               <node>/buttons/b1</node>
+           </chunk>
            <chunk><!-- 0x34 -->
                <name>Vars/altitude</name>
                <type>double</type>
@@ -54,50 +62,113 @@
                <name>Vars/turnRate3</name>
                <type>double</type>
            </chunk>
-           <chunk><name>0x55</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x59</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x5d</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x61</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x65</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0x55</name><type>bool</type><node>/padding</node> </chunk>
+           <chunk><name>0x56</name><type>bool</type><node>/padding</node> </chunk>
+           <chunk><!-- 0x57 -->
+               <name>Vars/button2</name>
+               <type>bool</type>
+               <node>/buttons/b2</node>
+           </chunk>
+           <chunk><!-- 0x58 -->
+               <name>Vars/button3</name>
+               <type>bool</type>
+               <node>/buttons/b3</node>
+           </chunk>
+           <chunk><name>0x59</name><type>bool</type><node>/padding</node> </chunk>
+           <chunk><name>0x5a</name><type>bool</type><node>/padding</node> </chunk>
+           <chunk><name>0x5b</name><type>bool</type><node>/padding</node> </chunk>
+           <chunk><!-- 0x5c -->
+               <name>Vars/status0</name>
+               <type>bool</type>
+               <node>/status/s0</node>
+           </chunk>
+           <chunk><!-- 0x5d -->
+               <name>Vars/button4</name>
+               <type>bool</type>
+               <node>/buttons/b4</node>
+           </chunk>
+           <chunk><name>0x5e</name><type>bool</type><node>/padding</node> </chunk>
+           <chunk><!-- 0x5f -->
+               <name>Vars/status1</name>
+               <type>bool</type>
+               <node>/status/s1</node>
+           </chunk>
+           <chunk><!-- 0x60 -->
+               <name>Vars/status2</name>
+               <type>bool</type>
+               <node>/status/s2</node>
+           </chunk>
+           <chunk><!-- 0x61 -->
+               <name>Vars/status3</name>
+               <type>bool</type>
+               <node>/status/s3</node>
+           </chunk>
+           <chunk><!-- 0x62 -->
+               <name>Vars/status4</name>
+               <type>bool</type>
+               <node>/status/s4</node>
+           </chunk>
+           <chunk><!-- 0x63 -->
+               <name>Vars/status5</name>
+               <type>bool</type>
+               <node>/status/s5</node>
+           </chunk>
+           <chunk><!-- 0x64 -->
+               <name>Vars/status6</name>
+               <type>bool</type>
+               <node>/status/s6</node>
+           </chunk>
+           <chunk><name>0x65</name><type>bool</type><node>/padding</node> </chunk>
+           <chunk><name>0x66</name><type>bool</type><node>/padding</node> </chunk>
+           <chunk><name>0x67</name><type>bool</type><node>/padding</node> </chunk>
+           <chunk><!-- 0x68 -->
+               <name>Vars/status7</name>
+               <type>bool</type>
+               <node>/status/s7</node>
+           </chunk>
            <chunk><name>0x69</name><type>int</type><node>/padding</node> </chunk>
            <chunk><name>0x6d</name><type>int</type><node>/padding</node> </chunk>
            <chunk><name>0x71</name><type>int</type><node>/padding</node> </chunk>
            <chunk><name>0x75</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x79</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x7d</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x81</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x85</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x89</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x8d</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x91</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x95</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x99</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x9d</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xa1</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xa5</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xa9</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xad</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xb1</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xb5</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xb9</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xbd</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xc1</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xc5</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xc9</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xcd</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xd1</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xd5</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xd9</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xdd</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xe1</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xe5</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xe9</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xed</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xf1</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xf5</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xf9</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0xfd</name><type>int</type><node>/padding</node> </chunk>
-           <chunk><name>0x101</name><type>bool</type><node>/padding</node> </chunk>
+           <chunk><!-- 0x79 -->
+               <name>Vars/button5</name>
+               <type>bool</type>
+               <node>/buttons/b5</node>
+           </chunk>
+           <chunk><name>0x7a</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0x7e</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0x82</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0x86</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0x8a</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0x8e</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0x92</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0x96</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0x9a</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0x9e</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xa2</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xa6</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xaa</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xae</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xb2</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xb6</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xba</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xbe</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xc2</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xc6</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xca</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xce</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xd2</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xd6</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xda</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xde</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xe2</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xe6</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xea</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xee</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xf2</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xf6</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xfa</name><type>int</type><node>/padding</node> </chunk>
+           <chunk><name>0xfe</name><type>int</type><node>/padding</node> </chunk>
            <chunk><!-- 0x102 -->
                <name>Vars/engineTorque</name>
                <type>double</type>
@@ -114,6 +185,7 @@
            <chunk><!-- 0x119 -->
                <name>Vars/unknow1</name>
                <type>double</type>
+               <node>/engines/engine[0]/tot-degc</node>
            </chunk>
            <chunk><name>0x125</name><type>int</type><node>/padding</node> </chunk>
            <chunk><name>0x129</name><type>int</type><node>/padding</node> </chunk>
@@ -126,6 +198,7 @@
            <chunk><!-- 0x133 -->
                <name>Vars/unknow2</name>
                <type>double</type>
+               <node>/engines/engine[1]/tot-degc</node>
            </chunk>
            <chunk><name>0x13f</name><type>int</type><node>/padding</node> </chunk>
            <chunk><name>0x143</name><type>int</type><node>/padding</node> </chunk>
