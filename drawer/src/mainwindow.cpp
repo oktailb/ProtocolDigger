@@ -269,26 +269,30 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
     pktIndex[offset] = pkt;
 }
 
-template <typename T> std::vector<T> qLineSeriesXToStdVector(const QLineSeries& series)
+template <typename T> std::vector<T> qLineSeriesXToStdVector(const QLineSeries& series, double from, double to)
 {
     std::vector<T> result;
 
     const QList<QPointF>& points = series.points();
     result.reserve(points.size());
     for (const QPointF& point : points)
-        result.emplace_back(point.x());
+        if (point.x() >= from)
+            if (point.x() <= to)
+                result.emplace_back(point.x());
 
     return result;
 }
 
-template <typename T> std::vector<T> qLineSeriesYToStdVector(const QLineSeries& series)
+template <typename T> std::vector<T> qLineSeriesYToStdVector(const QLineSeries& series, double from, double to)
 {
     std::vector<T> result;
 
     const QList<QPointF>& points = series.points();
     result.reserve(points.size());
     for (const QPointF& point : points)
-        result.emplace_back(point.y());
+        if (point.x() >= from)
+            if (point.x() <= to)
+                result.emplace_back(point.y());
 
     return result;
 }
@@ -313,7 +317,7 @@ bool DebugWindow::computeChartByCriteria(std::string name,
         SeriesFromOffset(offset, size, len, type, toHostEndian, mask, shift, ratio);
 
     pktIndex[offset] = 0;
-    std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series[offset]);
+    std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series[offset], ui->sliderFrom->value(), ui->sliderTo->value());
     if (tmp.size() != 0)
     {
         //        double e = entropy<double>(tmp);
@@ -471,18 +475,18 @@ void DebugWindow::updateChart(std::string name)
                 ui->ratio->setValue(ratio);
             }
             ready = true;
-            std::vector<double> tmp = qLineSeriesYToStdVector<double>(*serie);
+            std::vector<double> tmp = qLineSeriesYToStdVector<double>(*serie, ui->sliderFrom->value(), ui->sliderTo->value());
             if (tmp.size() != 0)
             {
                 double max = *std::max_element(tmp.begin(), tmp.end());
                 double min = *std::min_element(tmp.begin(), tmp.end());
-                double e = entropy<double>(tmp);
-                double d = diversity<double>(tmp);
+                // double e = entropy<double>(tmp);
+                // double d = diversity<double>(tmp);
                 if (offsetChange == true)
                     if (ui->chart->chart()->axes(Qt::Vertical).size())
                         ui->chart->chart()->axes(Qt::Vertical)[0]->setRange(min, max);
 
-                status += "Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max);
+//                status += "Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max);
             }
             else
                 status = "No data";
@@ -695,8 +699,19 @@ void DebugWindow::saveFGFSGenericProtocol(const std::map<std::string, std::strin
         {
             if (size == 4)
                 type = "float";
-            else
+            else if (size == 8)
                 type = "double";
+            else
+                throw;
+        }
+        if (type.compare("int") == 0)
+        {
+            if (size == 4)
+                type = "int";
+            else if (size == 1)
+                type = "bool";
+            else
+                throw;
         }
         file << "               <type>" << type << "</type>\n";
         if (params.size() > ConfigFields::e_customStr)
@@ -830,7 +845,7 @@ void DebugWindow::on_len_valueChanged(int len)
 void DebugWindow::on_actionFix_chart_range_triggered()
 {
     uint32_t currentOffset = ui->offset->value();
-    std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series[currentOffset]);
+    std::vector<double> tmp = qLineSeriesYToStdVector<double>(*series[currentOffset], ui->sliderFrom->value(), ui->sliderTo->value());
     if (tmp.size() != 0)
     {
         double max = *std::max_element(tmp.begin(), tmp.end());
