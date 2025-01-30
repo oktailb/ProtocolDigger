@@ -20,6 +20,7 @@ add_subdirectory(lib)
 add_subdirectory(capturer)
 add_subdirectory(drawer)
 add_subdirectory(cockpit)
+add_subdirectory(fdm)
 
 add_custom_target(config_file
     SOURCES config.ini)
