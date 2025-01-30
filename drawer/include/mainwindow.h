@@ -46,6 +46,7 @@ private slots:
     void on_sliderFrom_valueChanged(int value);
 
     void on_sliderTo_valueChanged(int value);
+    void displayPlotValue(const QPointF &point, bool state);
 
 private:
     Ui::DebugWindow *ui;

@@ -310,8 +310,11 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="text">
+         <string>FFFFFFFFFFFFFFFF</string>
+        </property>
         <property name="maxLength">
-         <number>18</number>
+         <number>16</number>
         </property>
        </widget>
       </item>

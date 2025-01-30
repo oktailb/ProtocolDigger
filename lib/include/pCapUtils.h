@@ -12,7 +12,7 @@ void read_device(const std::string& device, const std::string& filter_exp, Threa
 void read_socket(const std::string& address, uint16_t port, ThreadSafeQueue& queue, uint64_t packetLen, bool serverMode);
 void sendPcapTo(const std::string& address, uint16_t port, ThreadSafeQueue& queue, uint64_t packetLen, bool serverMode);
 uint64_t timeval_diff(struct timeval *end_time, struct timeval *start_time);
-
+int configureSocket(const std::string& address, uint16_t port, uint64_t packetLen, bool serverMode, struct sockaddr_in *sock_addr);
 std::string printIP(uint32_t val);
 
 template<typename T> T ntoh(T val)

@@ -102,6 +102,29 @@ void DebugWindow::timerEvent(QTimerEvent *event)
     ui->chart->repaint();
 }
 
+template<typename T> T extractVarFromData(PacketData *data, uint32_t offset, DataType type, bool endian, uint64_t mask, uint8_t shift)
+{
+    T res;
+
+    uint8_t *mapper = (uint8_t*) data->payload.data();
+
+    memcpy(&res, mapper + offset, sizeof(T));
+    if ((type == DataType::e_int) || (type == DataType::e_uint))
+    {
+        if (endian == DataEndian::e_host)
+            ntoh<T>(res);
+        res = (uint64_t)res & mask;
+        if (shift)
+            res = (uint64_t)res >> shift;
+    }
+    if (std::isinf(res))
+        res = 0;
+    if (std::isnan(res))
+        res = 0;
+
+    return res;
+}
+
 void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio)
 {
     QLineSeries *serie = nullptr;
@@ -156,21 +179,13 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
             switch(size)
             {
             case DataSize::e_32: {
-                float tmp;
-                memcpy(&tmp, mapper + offset, sizeof(float));
-                if (toHostEndian) ntoh<float>(tmp);
-                if (!std::isinf(tmp * ratio))
-                    if (!std::isnan(tmp * ratio))
-                        serie->append(timestamp, tmp * ratio);
+                float tmp = extractVarFromData<float>(pdata, offset, type, toHostEndian, mask, shift);
+                serie->append(timestamp, tmp * ratio);
             }
             break;
             case DataSize::e_64: {
-                double tmp;
-                memcpy(&tmp, mapper + offset, sizeof(double));
-                if (toHostEndian) ntoh<double>(tmp);
-                if (!std::isinf(tmp * ratio))
-                    if (!std::isnan(tmp * ratio))
-                        serie->append(timestamp, tmp * ratio);
+                double tmp = extractVarFromData<double>(pdata, offset, type, toHostEndian, mask, shift);
+                serie->append(timestamp, tmp * ratio);
             }
             break;
             default:
@@ -181,29 +196,17 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
             switch(size)
             {
             case DataSize::e_8:
-                serie->append(timestamp, (int8_t)mapper[offset]);
+                serie->append(timestamp, extractVarFromData<int8_t>(pdata, offset, type, toHostEndian, mask, shift) * ratio);
                 break;
-            case DataSize::e_16: {
-                int16_t tmp;
-                memcpy(&tmp, mapper + offset, sizeof(int16_t));
-                if (toHostEndian) tmp = ntoh<int16_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
-            }
-            break;
-            case DataSize::e_32: {
-                int32_t tmp;
-                memcpy(&tmp, mapper + offset, sizeof(int32_t));
-                if (toHostEndian) tmp = ntoh<int32_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
-            }
-            break;
-            case DataSize::e_64: {
-                int64_t tmp;
-                memcpy(&tmp, mapper + offset, sizeof(int64_t));
-                if (toHostEndian) tmp = ntoh<int64_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
-            }
-            break;
+            case DataSize::e_16:
+                serie->append(timestamp, extractVarFromData<int16_t>(pdata, offset, type, toHostEndian, mask, shift) * ratio);
+                break;
+            case DataSize::e_32:
+                serie->append(timestamp, extractVarFromData<int32_t>(pdata, offset, type, toHostEndian, mask, shift) * ratio);
+                break;
+            case DataSize::e_64:
+                serie->append(timestamp, extractVarFromData<int64_t>(pdata, offset, type, toHostEndian, mask, shift) * ratio);
+                break;
             default:
                 break;
             }
@@ -212,29 +215,17 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
             switch(size)
             {
             case DataSize::e_8:
-                serie->append(timestamp, (uint8_t)mapper[offset]);
+                serie->append(timestamp, extractVarFromData<uint8_t>(pdata, offset, type, toHostEndian, mask, shift) * ratio);
                 break;
-            case DataSize::e_16: {
-                uint16_t tmp;
-                memcpy(&tmp, mapper + offset, sizeof(uint16_t));
-                if (toHostEndian) tmp = ntoh<uint16_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
-            }
-            break;
-            case DataSize::e_32: {
-                uint32_t tmp;
-                memcpy(&tmp, mapper + offset, sizeof(uint32_t));
-                if (toHostEndian) tmp = ntoh<int32_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
-            }
-            break;
-            case DataSize::e_64: {
-                uint64_t tmp;
-                memcpy(&tmp, mapper + offset, sizeof(uint64_t));
-                if (toHostEndian) tmp = ntoh<uint64_t>(tmp);
-                serie->append(timestamp, ((tmp & mask) >> shift) * ratio);
-            }
-            break;
+            case DataSize::e_16:
+                serie->append(timestamp, extractVarFromData<uint16_t>(pdata, offset, type, toHostEndian, mask, shift) * ratio);
+                break;
+            case DataSize::e_32:
+                serie->append(timestamp, extractVarFromData<uint32_t>(pdata, offset, type, toHostEndian, mask, shift) * ratio);
+                break;
+            case DataSize::e_64:
+                serie->append(timestamp, extractVarFromData<uint64_t>(pdata, offset, type, toHostEndian, mask, shift) * ratio);
+                break;
             default:
                 break;
             }
@@ -425,7 +416,10 @@ void DebugWindow::updateChart(std::string name)
             type = stringDataType.at(ui->type->currentText().toStdString());
             toHostEndian = (ui->endian->checkState() == Qt::CheckState::Checked)?true:false;
             offset = ui->offset->value();
-            mask = ui->mask->text().toInt(nullptr, 16);
+            QString tmp = ui->mask->text();
+            tmp = tmp.toUpper();
+            bool ok;
+            mask = tmp.toULong(&ok, 16);
             shift = ui->shift->value();
             ratio = ui->ratio->value();
         }
@@ -455,6 +449,7 @@ void DebugWindow::updateChart(std::string name)
                                 + QString(intDataSize.at(size).c_str())
                                 + ")";
             serie->setName(serieName);
+            connect(serie, &QXYSeries::hovered, this, &DebugWindow::displayPlotValue);
         }
 
         if (!isSerieVisibleInChart(chart, serie))
@@ -887,5 +882,26 @@ void DebugWindow::on_sliderTo_valueChanged(int value)
     uint32_t mm = (value % 3600) / 60;
     uint32_t ss = (value % 3600) % 60;
     ui->timeTo->setTime(QTime(hh, mm, ss, 0));
+}
+
+void DebugWindow::displayPlotValue(const QPointF &point, bool state)
+{
+    QString HH = "";
+    QString MM = "";
+    QString SS = "";
+    uint64_t value = point.x();
+    uint32_t hh = value / 3600;
+    if (hh < 10)
+        HH += "0";
+    HH += QString::number(hh);
+    uint32_t mm = (value % 3600) / 60;
+    if (mm < 10)
+        MM += "0";
+    MM += QString::number(mm);
+    uint32_t ss = (value % 3600) % 60;
+    if (ss < 10)
+        SS += "0";
+    SS += QString::number(ss);
+    ui->statusBar->showMessage(HH + ":" + MM + ":" + SS + " = " + QString::number(point.y()));
 }
 
