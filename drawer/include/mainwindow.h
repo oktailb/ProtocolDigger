@@ -52,8 +52,7 @@ private:
     Ui::DebugWindow *ui;
     void fillVariables(std::map<std::string, varDef_t> &variables);
     void SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio);
-    bool computeChartByCriteria(std::string name,
-                                uint32_t offset,
+    bool computeChartByCriteria(uint32_t offset,
                                 DataSize size, uint32_t len,
                                 DataType type,
                                 bool toHostEndian,

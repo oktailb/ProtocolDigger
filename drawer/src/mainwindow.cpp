@@ -1,6 +1,7 @@
 #include "include/mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "pCapUtils.h"
+#include "ui_mainwindow.h"
 #include "variables.h"
 #include "configuration.h"
 #include <stdint.h>
@@ -40,11 +41,11 @@ template <typename T> uint32_t diversity(std::vector<T> data)
 DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, ThreadSafeQueue &queue, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::DebugWindow)
-    , configuration(configuration)
     , queue(queue)
     , queueData(queue.data())
     , timerId(0)
     , packetSize(0)
+    , configuration(configuration)
     , ready(false)
     , offsetChange(false)
 {
@@ -97,6 +98,7 @@ DebugWindow::~DebugWindow()
 
 void DebugWindow::timerEvent(QTimerEvent *event)
 {
+    Q_UNUSED(event);
     updateChart(ui->variables->currentText().toStdString());
     chart->createDefaultAxes();
     ui->chart->repaint();
@@ -137,6 +139,8 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
     else
         serie = series[offset];
 
+    if (serie == nullptr)
+        return;
     uint64_t count = serie->count();
     double frequency = 100.0;
     if (count > 2)
@@ -288,8 +292,7 @@ template <typename T> std::vector<T> qLineSeriesYToStdVector(const QLineSeries& 
     return result;
 }
 
-bool DebugWindow::computeChartByCriteria(std::string name,
-                                         uint32_t offset,
+bool DebugWindow::computeChartByCriteria(uint32_t offset,
                                          DataSize size,
                                          uint32_t len,
                                          DataType type,
@@ -522,6 +525,7 @@ void DebugWindow::updateChart(std::string name)
 
 void DebugWindow::on_variables_currentIndexChanged(int index)
 {
+    Q_UNUSED(index);
     if (!ready)
         return;
     std::string name = ui->variables->currentText().toStdString();
@@ -549,6 +553,7 @@ void DebugWindow::on_variables_currentIndexChanged(int index)
 
 void DebugWindow::on_variables_globalCheckStateChanged(int index)
 {
+    Q_UNUSED(index);
     if (!ready)
         return;
     std::string nameList = ui->variables->currentText().toStdString();
@@ -586,7 +591,6 @@ void DebugWindow::on_type_currentTextChanged(const QString &typeStr)
     variables[name].type = stringDataType.at(typeStr.toStdString());
 }
 
-
 void DebugWindow::on_size_currentTextChanged(const QString &sizeStr)
 {
     if (!ready)
@@ -600,7 +604,7 @@ void DebugWindow::on_mask_textChanged(const QString &mask)
     if (!ready)
         return;
     std::string name = ui->variables->currentText().toStdString();
-    variables[name].mask = ui->mask->text().toULong(nullptr, 16);;
+    variables[name].mask = mask.toULong(nullptr, 16);
 }
 
 void DebugWindow::on_shift_valueChanged(int shift)
@@ -668,7 +672,7 @@ void DebugWindow::saveFGFSGenericProtocol(const std::map<std::string, std::strin
             base[offset] = params;
         }
     }
-    int32_t currentOffset = 0;
+    uint32_t currentOffset = 0;
     for (auto item : base)
     {
         int32_t offset = item.first;
@@ -774,7 +778,6 @@ void DebugWindow::on_endian_toggled(bool checked)
     if (!ready)
         return;
     std::string name = ui->variables->currentText().toStdString();
-    bool toHostEndian = checked;
     variables[name].endian = checked?DataEndian::e_host:DataEndian::e_network;
 
     //updateChart(name);
@@ -818,7 +821,7 @@ void DebugWindow::on_autoSearch_clicked()
     {
         currentOffset++;
         ui->statusBar->showMessage("Offset " + QString::number(currentOffset, 16));
-        found = computeChartByCriteria(name, currentOffset, size, len, type, toHostEndian, mask, shift, ratio, diversityMin, min, max, ampMin, ampMax);
+        found = computeChartByCriteria(currentOffset, size, len, type, toHostEndian, mask, shift, ratio, diversityMin, min, max, ampMin, ampMax);
         if (currentOffset >= packetSize)
             break;
     }
@@ -863,7 +866,7 @@ void DebugWindow::on_actionExport_triggered()
 
 void DebugWindow::on_sliderFrom_valueChanged(int value)
 {
-    uint32_t to = ui->sliderTo->value();
+    int32_t to = ui->sliderTo->value();
     if (to < value)
         ui->sliderTo->setValue(value);
     uint32_t hh = value / 3600;
@@ -875,7 +878,7 @@ void DebugWindow::on_sliderFrom_valueChanged(int value)
 
 void DebugWindow::on_sliderTo_valueChanged(int value)
 {
-    uint32_t from = ui->sliderFrom->value();
+    int32_t from = ui->sliderFrom->value();
     if (from > value)
         ui->sliderFrom->setValue(value);
     uint32_t hh = value / 3600;
@@ -886,6 +889,7 @@ void DebugWindow::on_sliderTo_valueChanged(int value)
 
 void DebugWindow::displayPlotValue(const QPointF &point, bool state)
 {
+    Q_UNUSED(state);
     QString HH = "";
     QString MM = "";
     QString SS = "";

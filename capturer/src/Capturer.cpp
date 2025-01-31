@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
         std::thread reader_thread(read_pcap_file, pcap_file, filter_expression, std::ref(queue));
 
         // Consumer thread to process packets from the queue
-        std::thread consumer_thread([&queue, &configuration, &variables]() {
+        std::thread consumer_thread([&queue, &variables]() {
             bool fullScan = true;
 
             PacketData * data = new PacketData();
@@ -109,20 +109,9 @@ int main(int argc, char* argv[]) {
             }
             for (auto var : csv)
             {
-                uint32_t offset = var.first;
                 double avg = std::accumulate(var.second.begin(), var.second.end(), 0.0) / var.second.size();
                 double ent = entropy(var.second);
                 double div = diversity(var.second);
-                ttype max = *std::max_element(var.second.begin(), var.second.end());
-                ttype min = *std::min_element(var.second.begin(), var.second.end());
-                // if (avg > 1000000)
-                //    continue;
-                // if (avg < 10)
-                //    continue;
-                // if (min == max)
-                //     continue;
-                // if (ent < 0.1)
-                //     continue;
                 if (div <= 16)
                     continue;
                 uint32_t currentOffset = var.first;

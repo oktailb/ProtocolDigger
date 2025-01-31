@@ -153,9 +153,6 @@ void read_pcap_file(const std::string& file_name, const std::string& filter_exp,
         return;
     }
 
-    const uint8_t* packet;
-    struct pcap_pkthdr header;
-
     pcap_loop(handle, -1, pcapCallback, (uint8_t *)(&queue));
 
     pcap_close(handle);
@@ -185,9 +182,6 @@ void read_device(const std::string& device, const std::string& filter_exp, Threa
         pcap_close(handle);
         return;
     }
-
-    const uint8_t* packet;
-    struct pcap_pkthdr header;
 
     pcap_loop(handle, -1, pcapCallback, (uint8_t *)(&queue));
 

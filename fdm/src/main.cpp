@@ -33,6 +33,8 @@ std::map<std::string, varDef_t> variables;
 
 int main(int argc, char ** argv)
 {
+    if (argc < 2)
+        usage(argc, argv);
     std::map<std::string, std::string> configuration;
     configuration = readConfiguration(argv[1]);
 

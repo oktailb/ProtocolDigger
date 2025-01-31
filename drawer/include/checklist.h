@@ -138,7 +138,7 @@ public:
     {
         QList<int> res;
 
-        int nbRows = m_model->rowCount(), nbChecked = 0, nbUnchecked = 0;
+        int nbRows = m_model->rowCount();
 
         if (nbRows == 0)
             throw;
@@ -154,7 +154,7 @@ public:
     {
         QList<QString> res;
 
-        int nbRows = m_model->rowCount(), nbChecked = 0, nbUnchecked = 0;
+        int nbRows = m_model->rowCount();
 
         if (nbRows == 0)
             throw;
