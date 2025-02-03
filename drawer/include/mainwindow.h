@@ -75,5 +75,6 @@ private:
     double timestamp;
     double timeWindowSize;
     bool offsetChange;
+    bool formatChange;
 };
 #endif // MAINWINDOW_H

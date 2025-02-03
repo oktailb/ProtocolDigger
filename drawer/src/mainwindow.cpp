@@ -48,6 +48,7 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     , configuration(configuration)
     , ready(false)
     , offsetChange(false)
+    , formatChange(false)
 {
     extractVariablesFromConfiguration(configuration, variables);
     chart = new QChart();
@@ -114,7 +115,7 @@ template<typename T> T extractVarFromData(PacketData *data, uint32_t offset, Dat
     if ((type == DataType::e_int) || (type == DataType::e_uint))
     {
         if (endian == DataEndian::e_host)
-            ntoh<T>(res);
+            res = ntoh<T>(res);
         res = (uint64_t)res & mask;
         if (shift)
             res = (uint64_t)res >> shift;
@@ -137,8 +138,18 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
         pktIndex[offset] = 1;
     }
     else
+    {
         serie = series[offset];
-
+        if (formatChange)
+        {
+            serie->removePoints(0, serie->count() - 1);
+            delete serie;
+            serie = new QLineSeries();
+            series[offset] = serie;
+            pktIndex[offset] = 1;
+        }
+        formatChange = false;
+    }
     if (serie == nullptr)
         return;
     uint64_t count = serie->count();
@@ -461,7 +472,7 @@ void DebugWindow::updateChart(std::string name)
         if (names.size() == 1)
         {
             ready = false;
-            if (offsetChange == false)
+            if ((offsetChange == false) || (formatChange == false))
             {
                 ui->offset->setValue(offset);
                 ui->size->setCurrentText(intDataSize.at(size).c_str());
@@ -480,7 +491,7 @@ void DebugWindow::updateChart(std::string name)
                 double min = *std::min_element(tmp.begin(), tmp.end());
                 // double e = entropy<double>(tmp);
                 // double d = diversity<double>(tmp);
-                if (offsetChange == true)
+                if (offsetChange || formatChange)
                     if (ui->chart->chart()->axes(Qt::Vertical).size())
                         ui->chart->chart()->axes(Qt::Vertical)[0]->setRange(min, max);
 
@@ -547,6 +558,7 @@ void DebugWindow::on_variables_currentIndexChanged(int index)
     ui->ratio->setValue(ratio);
 
     offsetChange = false;
+    formatChange = false;
 
     //updateChart(name);
 }
@@ -568,6 +580,7 @@ void DebugWindow::on_variables_globalCheckStateChanged(int index)
     ui->size->setEnabled(enable);
 
     offsetChange = false;
+    formatChange = false;
 
     //updateChart(nameList);
 }
@@ -588,7 +601,9 @@ void DebugWindow::on_type_currentTextChanged(const QString &typeStr)
     if (!ready)
         return;
     std::string name = ui->variables->currentText().toStdString();
-    variables[name].type = stringDataType.at(typeStr.toStdString());
+    if (variables.find(name) != variables.end())
+        variables[name].type = stringDataType.at(typeStr.toStdString());
+    formatChange = true;
 }
 
 void DebugWindow::on_size_currentTextChanged(const QString &sizeStr)
@@ -596,7 +611,9 @@ void DebugWindow::on_size_currentTextChanged(const QString &sizeStr)
     if (!ready)
         return;
     std::string name = ui->variables->currentText().toStdString();
-    variables[name].size = stringDataSize.at(sizeStr.toStdString());
+    if (variables.find(name) != variables.end())
+        variables[name].size = stringDataSize.at(sizeStr.toStdString());
+    formatChange = true;
 }
 
 void DebugWindow::on_mask_textChanged(const QString &mask)
@@ -604,7 +621,9 @@ void DebugWindow::on_mask_textChanged(const QString &mask)
     if (!ready)
         return;
     std::string name = ui->variables->currentText().toStdString();
-    variables[name].mask = mask.toULong(nullptr, 16);
+    if (variables.find(name) != variables.end())
+        variables[name].mask = mask.toULong(nullptr, 16);
+    formatChange = true;
 }
 
 void DebugWindow::on_shift_valueChanged(int shift)
@@ -612,7 +631,9 @@ void DebugWindow::on_shift_valueChanged(int shift)
     if (!ready)
         return;
     std::string name = ui->variables->currentText().toStdString();
-    variables[name].shift = shift;
+    if (variables.find(name) != variables.end())
+        variables[name].shift = shift;
+    formatChange = true;
 }
 
 void DebugWindow::on_ratio_valueChanged(double ratio)
@@ -621,18 +642,20 @@ void DebugWindow::on_ratio_valueChanged(double ratio)
         return;
     std::string name = ui->variables->currentText().toStdString();
 
-    std::cerr << name << std::endl;
-    std::cerr << ratio << std::endl;
-    variables[name].ratio = ratio;
-    uint32_t offset = variables[name].offset;
-    ready = false;
-    uint32_t last = series[offset]->count() - 1;
-    series[offset]->removePoints(0, last);
-    series[offset]->clear();
-    delete series[offset];
-    series[offset] = new QLineSeries();
-    pktIndex[offset] = 1;
-    ready = true;
+    if (variables.find(name) != variables.end())
+    {
+        variables[name].ratio = ratio;
+        uint32_t offset = variables[name].offset;
+        ready = false;
+        uint32_t last = series[offset]->count() - 1;
+        series[offset]->removePoints(0, last);
+        series[offset]->clear();
+        delete series[offset];
+        series[offset] = new QLineSeries();
+        pktIndex[offset] = 1;
+        ready = true;
+    }
+    formatChange = true;
 }
 
 void DebugWindow::saveFGFSGenericProtocol(const std::map<std::string, std::string>& keyValuePairs, const std::string& filename)
@@ -778,14 +801,16 @@ void DebugWindow::on_endian_toggled(bool checked)
     if (!ready)
         return;
     std::string name = ui->variables->currentText().toStdString();
-    variables[name].endian = checked?DataEndian::e_host:DataEndian::e_network;
+    if (variables.find(name) != variables.end())
+        variables[name].endian = checked?DataEndian::e_host:DataEndian::e_network;
+    formatChange = true;
 
     //updateChart(name);
 }
 
 void DebugWindow::wheelEvent(QWheelEvent *event)
 {
-    double ratio = 1.1666;
+    double ratio = 4.0/3.0;
     if (!ready)
         return;
     if (event->angleDelta().y() > 0)
@@ -837,7 +862,9 @@ void DebugWindow::on_len_valueChanged(int len)
     if (!ready)
         return;
     std::string name = ui->variables->currentText().toStdString();
-    variables[name].len = len;
+    if (variables.find(name) != variables.end())
+        variables[name].len = len;
+    formatChange = true;
 }
 
 void DebugWindow::on_actionFix_chart_range_triggered()
