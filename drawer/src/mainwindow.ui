@@ -67,7 +67,7 @@
      <number>2</number>
     </property>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="DataFormat">
       <property name="spacing">
        <number>6</number>
       </property>
@@ -400,7 +400,58 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QHBoxLayout" name="DataArea">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="ChartView" name="chart">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="verticalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="renderHints">
+         <set>QPainter::Antialiasing|QPainter::TextAntialiasing</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTextEdit" name="dataAsText">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="DataSearch">
       <property name="spacing">
        <number>6</number>
       </property>
@@ -515,42 +566,17 @@
      </layout>
     </item>
     <item>
-     <widget class="ChartView" name="chart">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
-      </property>
-      <property name="verticalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOff</enum>
-      </property>
-      <property name="horizontalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOff</enum>
-      </property>
-      <property name="renderHints">
-       <set>QPainter::Antialiasing|QPainter::TextAntialiasing</set>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <layout class="QHBoxLayout" name="DataTiming">
       <property name="spacing">
        <number>0</number>
       </property>
       <item>
        <widget class="QTimeEdit" name="timeFrom">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
         <property name="displayFormat">
          <string>hh:mm:ss</string>
@@ -593,7 +619,10 @@
       <item>
        <widget class="QTimeEdit" name="timeTo">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
         </property>
         <property name="displayFormat">
          <string>hh:mm:ss</string>

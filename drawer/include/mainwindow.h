@@ -6,6 +6,7 @@
 #include <QtCharts/QValueAxis>
 #include "variables.h"
 #include "ThreadSafeQueue.h"
+#include "callout.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -51,7 +52,7 @@ private slots:
 private:
     Ui::DebugWindow *ui;
     void fillVariables(std::map<std::string, varDef_t> &variables);
-    void SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio);
+    bool SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio);
     bool computeChartByCriteria(uint32_t offset,
                                 DataSize size, uint32_t len,
                                 DataType type,
@@ -76,5 +77,7 @@ private:
     double timeWindowSize;
     bool offsetChange;
     bool formatChange;
+    Callout *m_tooltip;
+    QList<Callout *> m_callouts;
 };
 #endif // MAINWINDOW_H

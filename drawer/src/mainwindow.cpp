@@ -78,6 +78,10 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     ui->sliderTo->setValue(tsDuration);
     ui->timeFrom->setTime(QTime(0, 0, 0, 0));
     ui->timeTo->setTime(QTime(tsDurationHour, tsDurationMin, tsDurationSec, 0));
+    ui->dataAsText->setVisible(false);
+    m_tooltip = new Callout(chart);
+    m_tooltip->hide();
+
     ready = true;
 }
 
@@ -128,7 +132,7 @@ template<typename T> T extractVarFromData(PacketData *data, uint32_t offset, Dat
     return res;
 }
 
-void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio)
+bool DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio)
 {
     QLineSeries *serie = nullptr;
     if (series.find(offset) == series.end())
@@ -151,7 +155,7 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
         formatChange = false;
     }
     if (serie == nullptr)
-        return;
+        return false;
     uint64_t count = serie->count();
     double frequency = 100.0;
     if (count > 2)
@@ -167,17 +171,17 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
         }
     queueData = queue.data();
     if (queueData.size() == 0)
-        return;
+        return false;
     if (queueData[0] == nullptr)
-        return;
+        return false;
     packetSize = queueData[0]->payload.size();
     if (offset > packetSize)
-        return;
+        return false;
     ui->offset->setMaximum(packetSize);
     uint32_t pkt = pktIndex[offset];
     uint32_t qsize = queueData.size();
     if (pkt >= qsize)
-        return;
+        return false;
     timeval timestamp0 = queueData[0]->ts;
     while (pkt < qsize)
     {
@@ -273,6 +277,7 @@ void DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
         pkt++;
     }
     pktIndex[offset] = pkt;
+    return true;
 }
 
 template <typename T> std::vector<T> qLineSeriesXToStdVector(const QLineSeries& series, double from, double to)
@@ -450,7 +455,7 @@ void DebugWindow::updateChart(std::string name)
             ratio = var.ratio;
         }
 
-        SeriesFromOffset(offset, size, len, type, toHostEndian, mask, shift, ratio);
+        bool dataUpdate = SeriesFromOffset(offset, size, len, type, toHostEndian, mask, shift, ratio);
         QLineSeries *serie = series[offset];
 
         if (!hasSerieInChart(chart, serie))
@@ -484,24 +489,37 @@ void DebugWindow::updateChart(std::string name)
                 ui->ratio->setValue(ratio);
             }
             ready = true;
-            std::vector<double> tmp = qLineSeriesYToStdVector<double>(*serie, ui->sliderFrom->value(), ui->sliderTo->value());
-            if (tmp.size() != 0)
+            std::vector<double> values = qLineSeriesYToStdVector<double>(*serie, ui->sliderFrom->value(), ui->sliderTo->value());
+            if (values.size() != 0)
             {
-                double max = *std::max_element(tmp.begin(), tmp.end());
-                double min = *std::min_element(tmp.begin(), tmp.end());
-                // double e = entropy<double>(tmp);
-                // double d = diversity<double>(tmp);
-                if (offsetChange || formatChange)
-                    if (ui->chart->chart()->axes(Qt::Vertical).size())
-                        ui->chart->chart()->axes(Qt::Vertical)[0]->setRange(min, max);
+                if (dataUpdate)
+                {
+                    double max = *std::max_element(values.begin(), values.end());
+                    double min = *std::min_element(values.begin(), values.end());
+                    double e = entropy<double>(values);
+                    double d = diversity<double>(values);
+                    if (offsetChange || formatChange)
+                        if (ui->chart->chart()->axes(Qt::Vertical).size())
+                            ui->chart->chart()->axes(Qt::Vertical)[0]->setRange(min, max);
 
-//                status += "Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max);
+                    status += "Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max);
+
+                    std::vector<double> keys = qLineSeriesYToStdVector<double>(*serie, ui->sliderFrom->value(), ui->sliderTo->value());
+                    QString text = "";
+                    for (auto item : serie->points())
+                    {
+                        ui->dataAsText->setVisible(true);
+                        text += QString::number(item.x()) + "\t" + QString::number(item.y()) + "\n";
+                    }
+                    ui->dataAsText->setText(text);
+                }
             }
             else
                 status = "No data";
         }
         else
         {
+            ui->dataAsText->setVisible(false);
             if (serie->count() > 1)
                 status += currentName + ": " + QString::number(serie->at(serie->count() - 1).y(), 'g', 6).toStdString() + " ";
         }
@@ -933,6 +951,18 @@ void DebugWindow::displayPlotValue(const QPointF &point, bool state)
     if (ss < 10)
         SS += "0";
     SS += QString::number(ss);
-    ui->statusBar->showMessage(HH + ":" + MM + ":" + SS + " = " + QString::number(point.y()));
+
+    double m = 1000 * (point.x() - value);
+
+    if (state) {
+        m_tooltip->setText(QString("Time : " + HH + ":" + MM + ":" + SS + "." + QString::number(m) + "\nValue: %1 ").arg(point.y()));
+        m_tooltip->setAnchor(point);
+        m_tooltip->setZValue(11);
+        m_tooltip->updateGeometry();
+        m_tooltip->show();
+    } else {
+        m_tooltip->hide();
+    }
+
 }
 

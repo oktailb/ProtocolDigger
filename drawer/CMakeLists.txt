@@ -21,6 +21,7 @@ set (${PROJECT_NAME}_SRC
     src/mainwindow.cpp
     src/chartview.cpp
     src/chart.cpp
+    src/callout.cpp
 )
 
 set (${PROJECT_NAME}_UI
@@ -32,6 +33,7 @@ set (${PROJECT_NAME}_INCLUDE
     include/chartview.h
     include/chart.h
     include/checklist.h
+    include/callout.h
 )
 
 qt_add_executable(${PROJECT_NAME}
