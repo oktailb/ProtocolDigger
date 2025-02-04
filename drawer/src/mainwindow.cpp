@@ -81,6 +81,7 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     ui->dataAsText->setVisible(false);
     m_tooltip = new Callout(chart);
     m_tooltip->hide();
+    ui->hexdump->setVisible(false);
 
     ready = true;
 }
@@ -454,90 +455,99 @@ void DebugWindow::updateChart(std::string name)
             shift = var.shift;
             ratio = var.ratio;
         }
-
-        bool dataUpdate = SeriesFromOffset(offset, size, len, type, toHostEndian, mask, shift, ratio);
-        QLineSeries *serie = series[offset];
-
-        if (!hasSerieInChart(chart, serie))
+        if (type == DataType::e_string)
         {
-            chart->addSeries(serie);
-            QString serieName = QString(currentName.c_str())
-                                + " ("
-                                + QString(intDataType.at(type).c_str())
-                                + " "
-                                + QString(intDataSize.at(size).c_str())
-                                + ")";
-            serie->setName(serieName);
-            connect(serie, &QXYSeries::hovered, this, &DebugWindow::displayPlotValue);
-        }
+            ui->dataAsText->setVisible(true);
+            double ts = ui->sliderFrom->value();
 
-        if (!isSerieVisibleInChart(chart, serie))
-            serie->show();
-
-        if (names.size() == 1)
-        {
-            ready = false;
-            if ((offsetChange == false) || (formatChange == false))
+            uint32_t index = 0;
+            while (index < queueData.size())
             {
-                ui->offset->setValue(offset);
-                ui->size->setCurrentText(intDataSize.at(size).c_str());
-                ui->len->setValue(len);
-                ui->type->setCurrentText(intDataType.at(type).c_str());
-                ui->endian->setCheckState(toHostEndian?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
-                ui->mask->setText(QString::number(mask, 16));
-                ui->shift->setValue(shift);
-                ui->ratio->setValue(ratio);
+                uint64_t current = timeval_diff(&(queueData[index]->ts), &(queueData[0]->ts));
+                if (current == ts)
+                    break;
+                index++;
             }
-            ready = true;
-            std::vector<double> values = qLineSeriesYToStdVector<double>(*serie, ui->sliderFrom->value(), ui->sliderTo->value());
-            if (values.size() != 0)
-            {
-                if (dataUpdate)
-                {
-                    double max = *std::max_element(values.begin(), values.end());
-                    double min = *std::min_element(values.begin(), values.end());
-                    double e = entropy<double>(values);
-                    double d = diversity<double>(values);
-                    if (offsetChange || formatChange)
-                        if (ui->chart->chart()->axes(Qt::Vertical).size())
-                            ui->chart->chart()->axes(Qt::Vertical)[0]->setRange(min, max);
-
-                    status += "Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max);
-
-                    std::vector<double> keys = qLineSeriesYToStdVector<double>(*serie, ui->sliderFrom->value(), ui->sliderTo->value());
-                    QString text = "";
-                    for (auto item : serie->points())
-                    {
-                        ui->dataAsText->setVisible(true);
-                        text += QString::number(item.x()) + "\t" + QString::number(item.y()) + "\n";
-                    }
-                    ui->dataAsText->setText(text);
-                }
-            }
-            else
-                status = "No data";
+            char * text = (char*)malloc(len + 1);
+            text[len] = '\0';
+            memcpy(text, queueData[index]->payload.data() + offset, len);
+            ui->dataAsText->setText(text);
+            free(text);
         }
         else
         {
-            ui->dataAsText->setVisible(false);
-            if (serie->count() > 1)
-                status += currentName + ": " + QString::number(serie->at(serie->count() - 1).y(), 'g', 6).toStdString() + " ";
+            bool dataUpdate = SeriesFromOffset(offset, size, len, type, toHostEndian, mask, shift, ratio);
+            QLineSeries *serie = series[offset];
+
+            if (!hasSerieInChart(chart, serie))
+            {
+                chart->addSeries(serie);
+                QString serieName = QString(currentName.c_str())
+                                    + " ("
+                                    + QString(intDataType.at(type).c_str())
+                                    + " "
+                                    + QString(intDataSize.at(size).c_str())
+                                    + ")";
+                serie->setName(serieName);
+                connect(serie, &QXYSeries::hovered, this, &DebugWindow::displayPlotValue);
+            }
+
+            if (!isSerieVisibleInChart(chart, serie))
+                serie->show();
+
+            if (names.size() == 1)
+            {
+                ready = false;
+                if ((offsetChange == false) || (formatChange == false))
+                {
+                    ui->offset->setValue(offset);
+                    ui->size->setCurrentText(intDataSize.at(size).c_str());
+                    ui->len->setValue(len);
+                    ui->type->setCurrentText(intDataType.at(type).c_str());
+                    ui->endian->setCheckState(toHostEndian?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
+                    ui->mask->setText(QString::number(mask, 16));
+                    ui->shift->setValue(shift);
+                    ui->ratio->setValue(ratio);
+                }
+                ready = true;
+                std::vector<double> values = qLineSeriesYToStdVector<double>(*serie, ui->sliderFrom->value(), ui->sliderTo->value());
+                if (values.size() != 0)
+                {
+                    if (dataUpdate)
+                    {
+                        double max = *std::max_element(values.begin(), values.end());
+                        double min = *std::min_element(values.begin(), values.end());
+                        double e = entropy<double>(values);
+                        double d = diversity<double>(values);
+                        if (offsetChange || formatChange)
+                            if (ui->chart->chart()->axes(Qt::Vertical).size())
+                                ui->chart->chart()->axes(Qt::Vertical)[0]->setRange(min, max);
+
+                        status += "Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max);
+
+                        std::vector<double> keys = qLineSeriesYToStdVector<double>(*serie, ui->sliderFrom->value(), ui->sliderTo->value());
+                        QString text = "";
+                        for (auto item : serie->points())
+                        {
+                            ui->dataAsText->setVisible(true);
+                            text += QString::number(item.x()) + "\t" + QString::number(item.y()) + "\n";
+                        }
+                        ui->dataAsText->setText(text);
+                    }
+                }
+                else
+                    status = "No data";
+            }
+            else
+            {
+                ui->dataAsText->setVisible(false);
+                if (serie->count() > 1)
+                    status += currentName + ": " + QString::number(serie->at(serie->count() - 1).y(), 'g', 6).toStdString() + " ";
+            }
         }
     }
 
-    if (names.size() == 1)
-    {
-        // ui->variables->setCurrentText(name.c_str());
-        // ui->offset->setValue(offset);
-        // ui->size->setCurrentText(QString(intDataSize.at(size).c_str()));
-        // ui->type->setCurrentText(QString(intDataType.at(type).c_str()));
-        // ui->endian->setCheckState(toHostEndian?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
-        // ui->mask->setText(QString::number(mask, 16));
-        // ui->shift->setValue(shift);
-        // ui->ratio->setValue(ratio);
-    }
-    else
-        ui->statusBar->showMessage(status);
+    ui->statusBar->showMessage(status);
     if (timeWindowSize > 0.001) // this is not an oscilloscope ...
     {
         if (!ui->chart->chart()->axes(Qt::Horizontal).empty())
@@ -665,11 +675,15 @@ void DebugWindow::on_ratio_valueChanged(double ratio)
         variables[name].ratio = ratio;
         uint32_t offset = variables[name].offset;
         ready = false;
-        uint32_t last = series[offset]->count() - 1;
-        series[offset]->removePoints(0, last);
-        series[offset]->clear();
-        delete series[offset];
-        series[offset] = new QLineSeries();
+        QLineSeries *serie = series[offset];
+        if (serie == nullptr)
+            return;
+        uint32_t last = serie->count() - 1;
+        serie->removePoints(0, last);
+        serie->clear();
+        delete serie;
+        serie = new QLineSeries();
+        series[offset] = serie;
         pktIndex[offset] = 1;
         ready = true;
     }
@@ -964,5 +978,34 @@ void DebugWindow::displayPlotValue(const QPointF &point, bool state)
         m_tooltip->hide();
     }
 
+    double ts = ui->sliderFrom->value();
+
+    uint32_t index = 0;
+    while (index < queueData.size())
+    {
+        uint64_t current = timeval_diff(&(queueData[index]->ts), &(queueData[0]->ts));
+        if (current == ts)
+            break;
+        index++;
+    }
+    QString text = "0x0000: ";
+
+    for (int i = 0 ; i < queueData[index]->len ; i++)
+    {
+        if (i && (i%32 == 0))
+        {
+            text += QString("\n0x") + (i<0x10?"0":"") + (i<0x100?"0":"") + (i<0x1000?"0":"") + QString::number(i, 16) + ": ";
+        }
+        if (i >= ui->offset->value())
+            ui->hexdump->setTextColor(QColor(255, 0, 0));
+        uint8_t val = queueData[index]->payload[i];
+        text += (val<0x10?"0":"") + QString::number(val, 16) + " ";
+    }
+    ui->hexdump->setText(text);
+}
+
+void DebugWindow::on_actionhexdump_triggered(bool checked)
+{
+    ui->hexdump->setVisible(checked);
 }
 

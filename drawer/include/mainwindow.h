@@ -49,6 +49,8 @@ private slots:
     void on_sliderTo_valueChanged(int value);
     void displayPlotValue(const QPointF &point, bool state);
 
+    void on_actionhexdump_triggered(bool checked);
+
 private:
     Ui::DebugWindow *ui;
     void fillVariables(std::map<std::string, varDef_t> &variables);
