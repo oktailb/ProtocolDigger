@@ -677,6 +677,7 @@
     </property>
     <addaction name="actionFix_chart_range"/>
     <addaction name="actionhexdump"/>
+    <addaction name="actiondata_listing"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -779,6 +780,14 @@
    </property>
    <property name="text">
     <string>hexdump</string>
+   </property>
+  </action>
+  <action name="actiondata_listing">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>data listing</string>
    </property>
   </action>
  </widget>

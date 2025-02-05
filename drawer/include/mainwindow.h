@@ -51,6 +51,8 @@ private slots:
 
     void on_actionhexdump_triggered(bool checked);
 
+    void on_actiondata_listing_triggered(bool checked);
+
 private:
     Ui::DebugWindow *ui;
     void fillVariables(std::map<std::string, varDef_t> &variables);
@@ -84,5 +86,6 @@ private:
     QPointF currentPoint;
 
     void showHexdump();
+    void showDataAsText(std::vector<double> values);
 };
 #endif // MAINWINDOW_H

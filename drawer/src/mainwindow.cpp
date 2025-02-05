@@ -82,6 +82,7 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     m_tooltip = new Callout(chart);
     m_tooltip->hide();
     ui->hexdump->setVisible(false);
+    ui->dataAsText->setVisible(false);
     currentPoint = QPointF(0, 0);
     ready = true;
 }
@@ -136,12 +137,14 @@ template<typename T> T extractVarFromData(PacketData *data, uint32_t offset, Dat
 
 bool DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len, DataType type, bool toHostEndian, uint64_t mask, uint8_t shift, double ratio)
 {
+    bool ret = false;
     QLineSeries *serie = nullptr;
     if (series.find(offset) == series.end())
     {
         serie = new QLineSeries();
         series[offset] = serie;
         pktIndex[offset] = 1;
+        ret = true;
     }
     else
     {
@@ -153,6 +156,7 @@ bool DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
             serie = new QLineSeries();
             series[offset] = serie;
             pktIndex[offset] = 1;
+            ret = true;
         }
         formatChange = false;
     }
@@ -279,7 +283,7 @@ bool DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
         pkt++;
     }
     pktIndex[offset] = pkt;
-    return true;
+    return ret;
 }
 
 template <typename T> std::vector<T> qLineSeriesXToStdVector(const QLineSeries& series, double from, double to)
@@ -488,6 +492,8 @@ void DebugWindow::updateChart(std::string name)
                                     + QString(intDataType.at(type).c_str())
                                     + " "
                                     + QString(intDataSize.at(size).c_str())
+                                    + " "
+                                    + (toHostEndian?"H":"N")
                                     + ")";
                 serie->setName(serieName);
                 connect(serie, &QXYSeries::hovered, this, &DebugWindow::displayPlotValue);
@@ -514,28 +520,21 @@ void DebugWindow::updateChart(std::string name)
                 std::vector<double> values = qLineSeriesYToStdVector<double>(*serie, ui->sliderFrom->value(), ui->sliderTo->value());
                 if (values.size() != 0)
                 {
-                    if (dataUpdate)
+                    if (dataUpdate || formatChange)
                     {
                         double max = *std::max_element(values.begin(), values.end());
                         double min = *std::min_element(values.begin(), values.end());
-                        double e = entropy<double>(values);
                         double d = diversity<double>(values);
                         if (offsetChange || formatChange)
                             if (ui->chart->chart()->axes(Qt::Vertical).size())
                                 ui->chart->chart()->axes(Qt::Vertical)[0]->setRange(min, max);
+                        ui->minVal->setValue(min);
+                        ui->maxVal->setValue(max);
+                        ui->diversityMin->setValue(d);
+                        ui->ampMin->setValue(0);
+                        ui->ampMax->setValue(max - min);
 
-                        status += "Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max);
-
-                        std::vector<double> keys = qLineSeriesYToStdVector<double>(*serie, ui->sliderFrom->value(), ui->sliderTo->value());
-                        QString text = "<table>\n";
-                        text += "<tr>\n<th>Timestamp</th>\n<th>Value</th>\n";
-                        for (auto item : serie->points())
-                        {
-                            ui->dataAsText->setVisible(true);
-                            text += "<tr><td>" + QString::number(item.x()) + "</td>\n<td>" + QString::number(item.y()) + "</td></tr>\n";
-                        }
-                        text += "</table>\n";
-                        ui->dataAsText->setHtml(text);
+                        showDataAsText(values);
                     }
                 }
                 else
@@ -621,6 +620,7 @@ void DebugWindow::on_offset_valueChanged(int offset)
     if (!ready)
         return;
     offsetChange = true;
+
     QString name = "unknown on 0x" + QString::number(offset, 16);
     if (findByOffset(offset, variables).length() != 0)
         name = QString(findByOffset(offset, variables).c_str());
@@ -956,7 +956,7 @@ void DebugWindow::showHexdump()
     if (!ui->hexdump->isVisible())
         return;
     uint64_t ts = currentPoint.x(); // I may be too old to fix it when the bug occurs
-    if (ts == 0.0)
+    if (ts == 0)
         return;
     uint32_t index = 0;
     while (index < queueData.size())
@@ -979,14 +979,18 @@ void DebugWindow::showHexdump()
     text += "<tr>\n";
 
     uint32_t offset = (uint32_t)ui->offset->value();
-    uint8_t dataSize = stringDataSize.at(ui->size->currentText().toStdString()) / 8;
+    uint32_t dataSize = stringDataSize.at(ui->size->currentText().toStdString()) / 8;
+    if (stringDataType.at(ui->type->currentText().toStdString()) == DataType::e_sint)
+        dataSize = ui->len->value();
+    if (stringDataType.at(ui->type->currentText().toStdString()) == DataType::e_string)
+        dataSize = ui->len->value();
     const uint32_t padding = 16;
     for (uint32_t i = 0 ; i < queueData[index]->len ; i++)
     {
-        uint32_t baseAddr = i - i %padding;
-        if (baseAddr < offset - padding)
+        uint32_t baseAddr = i - (i%padding);
+        if (baseAddr < (offset - padding))
             continue;
-        if (baseAddr > offset + dataSize)
+        if (baseAddr > (offset + dataSize))
             continue;
 
         if (i == 0)
@@ -1023,6 +1027,21 @@ void DebugWindow::showHexdump()
     ui->hexdump->setHtml(text);
 }
 
+void DebugWindow::showDataAsText(std::vector<double> values)
+{
+    if (!ui->dataAsText->isVisible())
+    {
+        ui->dataAsText->setText("Populating ...");
+        QString text = "<table>";
+        for (auto i : values)
+        {
+            text+= "<tr><td>" + QString::number(i, 'f', 3) + "</td><td>" + QString::number((uint64_t)i, 16) + "</td></tr>";
+        }
+        text += "</table>";
+        ui->dataAsText->setHtml(text);
+    }
+}
+
 void DebugWindow::displayPlotValue(const QPointF &point, bool state)
 {
     currentPoint = point;
@@ -1047,7 +1066,7 @@ void DebugWindow::displayPlotValue(const QPointF &point, bool state)
     double m = 1000 * (point.x() - value);
 
     if (state) {
-        m_tooltip->setText(QString("Time : " + HH + ":" + MM + ":" + SS + "." + QString::number(m) + "\nValue: %1 ").arg(point.y()));
+        m_tooltip->setText(QString("Time : ") + HH + ":" + MM + ":" + SS + "." + QString::number(m) + "\nValue: " + QString::number(point.y(), 'f', 3));
         m_tooltip->setAnchor(point);
         m_tooltip->setZValue(11);
         m_tooltip->updateGeometry();
@@ -1061,5 +1080,11 @@ void DebugWindow::displayPlotValue(const QPointF &point, bool state)
 void DebugWindow::on_actionhexdump_triggered(bool checked)
 {
     ui->hexdump->setVisible(checked);
+}
+
+
+void DebugWindow::on_actiondata_listing_triggered(bool checked)
+{
+    ui->dataAsText->setVisible(checked);
 }
 
