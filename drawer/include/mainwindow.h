@@ -81,5 +81,8 @@ private:
     bool formatChange;
     Callout *m_tooltip;
     QList<Callout *> m_callouts;
+    QPointF currentPoint;
+
+    void showHexdump();
 };
 #endif // MAINWINDOW_H

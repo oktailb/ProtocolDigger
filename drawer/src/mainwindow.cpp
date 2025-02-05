@@ -82,7 +82,7 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     m_tooltip = new Callout(chart);
     m_tooltip->hide();
     ui->hexdump->setVisible(false);
-
+    currentPoint = QPointF(0, 0);
     ready = true;
 }
 
@@ -105,6 +105,7 @@ DebugWindow::~DebugWindow()
 void DebugWindow::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event);
+    showHexdump();
     updateChart(ui->variables->currentText().toStdString());
     chart->createDefaultAxes();
     ui->chart->repaint();
@@ -526,13 +527,15 @@ void DebugWindow::updateChart(std::string name)
                         status += "Entropy : " + QString::number(e) + " Diversity : " + QString::number(d) + " Min : " + QString::number(min) + " Max : " + QString::number(max);
 
                         std::vector<double> keys = qLineSeriesYToStdVector<double>(*serie, ui->sliderFrom->value(), ui->sliderTo->value());
-                        QString text = "";
+                        QString text = "<table>\n";
+                        text += "<tr>\n<th>Timestamp</th>\n<th>Value</th>\n";
                         for (auto item : serie->points())
                         {
                             ui->dataAsText->setVisible(true);
-                            text += QString::number(item.x()) + "\t" + QString::number(item.y()) + "\n";
+                            text += "<tr><td>" + QString::number(item.x()) + "</td>\n<td>" + QString::number(item.y()) + "</td></tr>\n";
                         }
-                        ui->dataAsText->setText(text);
+                        text += "</table>\n";
+                        ui->dataAsText->setHtml(text);
                     }
                 }
                 else
@@ -946,8 +949,83 @@ void DebugWindow::on_sliderTo_valueChanged(int value)
     ui->timeTo->setTime(QTime(hh, mm, ss, 0));
 }
 
+void DebugWindow::showHexdump()
+{
+    if (!ready)
+        return;
+    if (!ui->hexdump->isVisible())
+        return;
+    uint64_t ts = currentPoint.x(); // I may be too old to fix it when the bug occurs
+    if (ts == 0.0)
+        return;
+    uint32_t index = 0;
+    while (index < queueData.size())
+    {
+        uint64_t current = timeval_diff(&(queueData[index]->ts), &(queueData[0]->ts)) / 1000000.0f;
+        if (current == ts)
+            break;
+        index++;
+    }
+    if (index == queueData.size())
+        return;
+    QString text = "<table>\n";
+    text += "<tr>\n";
+    text += "<th></th>\n";
+    for (int i=0; i <= 0xF ; i++)
+        text += "<th>&nbsp;0" + QString::number(i, 16) + "&nbsp;</th>\n";
+    text += "<th>ASCII</th>\n";
+    text += "</tr>\n";
+
+    text += "<tr>\n";
+
+    uint32_t offset = (uint32_t)ui->offset->value();
+    uint8_t dataSize = stringDataSize.at(ui->size->currentText().toStdString()) / 8;
+    const uint32_t padding = 16;
+    for (uint32_t i = 0 ; i < queueData[index]->len ; i++)
+    {
+        uint32_t baseAddr = i - i %padding;
+        if (baseAddr < offset - padding)
+            continue;
+        if (baseAddr > offset + dataSize)
+            continue;
+
+        if (i == 0)
+            text += "<th>0x0000</th>";
+
+        if (i && (i%padding == 0))
+            text += QString("</tr>\n<tr>\n<th>0x") + (i<0x10?"0":"") + (i<0x100?"0":"") + (i<0x1000?"0":"") + QString::number(i, 16) + "</th>";
+
+        text += QString("\n<td ");
+
+        uint8_t val = queueData[index]->payload[i];
+        if ( (i >= offset) && (i < (offset + dataSize)) )
+            text += "style='color:red; font-weight:bold;'";
+        text += QString(">&nbsp;") + (val<0x10?"0":"") + QString::number(val, 16);
+        text += "</td>";
+
+        if (((i + 1)%padding == 0))
+        {
+            text += "<td>&nbsp;---&gt;&nbsp;\n";
+            for (uint32_t c = baseAddr ; c < baseAddr + padding ; c++)
+            {
+                QChar pr(queueData[index]->payload[c]);
+                if (pr.isPrint())
+                    text += pr;
+                else
+                    text += '.';
+            }
+            text += "</td>\n";
+        }
+    }
+    text += "\n</tr>\n";
+    text += "</table>\n";
+
+    ui->hexdump->setHtml(text);
+}
+
 void DebugWindow::displayPlotValue(const QPointF &point, bool state)
 {
+    currentPoint = point;
     Q_UNUSED(state);
     QString HH = "";
     QString MM = "";
@@ -978,30 +1056,6 @@ void DebugWindow::displayPlotValue(const QPointF &point, bool state)
         m_tooltip->hide();
     }
 
-    double ts = ui->sliderFrom->value();
-
-    uint32_t index = 0;
-    while (index < queueData.size())
-    {
-        uint64_t current = timeval_diff(&(queueData[index]->ts), &(queueData[0]->ts));
-        if (current == ts)
-            break;
-        index++;
-    }
-    QString text = "0x0000: ";
-
-    for (int i = 0 ; i < queueData[index]->len ; i++)
-    {
-        if (i && (i%32 == 0))
-        {
-            text += QString("\n0x") + (i<0x10?"0":"") + (i<0x100?"0":"") + (i<0x1000?"0":"") + QString::number(i, 16) + ": ";
-        }
-        if (i >= ui->offset->value())
-            ui->hexdump->setTextColor(QColor(255, 0, 0));
-        uint8_t val = queueData[index]->payload[i];
-        text += (val<0x10?"0":"") + QString::number(val, 16) + " ";
-    }
-    ui->hexdump->setText(text);
 }
 
 void DebugWindow::on_actionhexdump_triggered(bool checked)
