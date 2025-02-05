@@ -25,6 +25,12 @@ add_subdirectory(fdm)
 add_custom_target(config_file
     SOURCES config.ini)
 
+add_custom_target(github_actions
+    SOURCES
+    .github/workflows/cmake-multi-platform.yml
+    .github/workflows/codeql.yml
+)
+
 install(TARGETS
     sinviCapturer
     sinviDrawer
