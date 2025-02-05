@@ -25,8 +25,12 @@ add_subdirectory(fdm)
 add_custom_target(config_file
     SOURCES config.ini)
 
-install(TARGETS ${PROJECT_NAME}Capturer
-#                ${PROJECT_NAME}Drawer
+install(TARGETS
+    sinviCapturer
+    sinviDrawer
+    sinviCockpit
+    fgfsInvisFDM
+    Sinvi
     BUNDLE DESTINATION ${CMAKE_CURRENT_LIST_DIR}/
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
