@@ -268,7 +268,7 @@ bool DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
                 tmp = std::stoi(tmpStr);
             } catch (...) {
                 std::cerr << offset << " : " << tmpStr << " -> 0x";
-                int i = 0;
+                uint32_t i = 0;
                 while (i < len)
                     std::cerr << std::hex << (uint8_t)(tmpStr[i++]);
                 std::cerr << std::endl;
