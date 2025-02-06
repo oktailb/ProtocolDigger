@@ -129,20 +129,20 @@ void qfi_VSI::init()
 
     reset();
 
-    _itemFace = new QGraphicsSvgItem( ":/images/vsi/vsi_face.svg" );
+    _itemFace = new QGraphicsSvgItem( ":qfi/images/vsi/vsi_face.svg" );
     _itemFace->setCacheMode( QGraphicsItem::NoCache );
     _itemFace->setZValue( _faceZ );
     _itemFace->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _scene->addItem( _itemFace );
 
-    _itemHand = new QGraphicsSvgItem( ":/images/vsi/vsi_hand.svg" );
+    _itemHand = new QGraphicsSvgItem( ":qfi/images/vsi/vsi_hand.svg" );
     _itemHand->setCacheMode( QGraphicsItem::NoCache );
     _itemHand->setZValue( _handZ );
     _itemHand->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemHand->setTransformOriginPoint( _originalVsiCtr );
     _scene->addItem( _itemHand );
 
-    _itemCase = new QGraphicsSvgItem( ":/images/vsi/vsi_case.svg" );
+    _itemCase = new QGraphicsSvgItem( ":qfi/images/vsi/vsi_case.svg" );
     _itemCase->setCacheMode( QGraphicsItem::NoCache );
     _itemCase->setZValue( _caseZ );
     _itemCase->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );

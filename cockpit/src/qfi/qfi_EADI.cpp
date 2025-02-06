@@ -174,13 +174,13 @@ void qfi_EADI::init()
     _hdg->init( _scaleX, _scaleY );
     _vsi->init( _scaleX, _scaleY );
 
-    _itemBack = new QGraphicsSvgItem( ":/images/eadi/eadi_back.svg" );
+    _itemBack = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_back.svg" );
     _itemBack->setCacheMode( QGraphicsItem::NoCache );
     _itemBack->setZValue( _backZ );
     _itemBack->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _scene->addItem( _itemBack );
 
-    _itemMask = new QGraphicsSvgItem( ":/images/eadi/eadi_mask.svg" );
+    _itemMask = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_mask.svg" );
     _itemMask->setCacheMode( QGraphicsItem::NoCache );
     _itemMask->setZValue( _maskZ );
     _itemMask->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -445,7 +445,7 @@ void qfi_EADI::ADI::init( double scaleX, double scaleY )
 
     reset();
 
-    _itemBack = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_back.svg" );
+    _itemBack = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_back.svg" );
     _itemBack->setCacheMode( QGraphicsItem::NoCache );
     _itemBack->setZValue( _backZ );
     _itemBack->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -453,7 +453,7 @@ void qfi_EADI::ADI::init( double scaleX, double scaleY )
     _itemBack->moveBy( _scaleX * _originalBackPos.x(), _scaleY * _originalBackPos.y() );
     _scene->addItem( _itemBack );
 
-    _itemLadd = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_ladd.svg" );
+    _itemLadd = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_ladd.svg" );
     _itemLadd->setCacheMode( QGraphicsItem::NoCache );
     _itemLadd->setZValue( _laddZ );
     _itemLadd->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -461,7 +461,7 @@ void qfi_EADI::ADI::init( double scaleX, double scaleY )
     _itemLadd->moveBy( _scaleX * _originalLaddPos.x(), _scaleY * _originalLaddPos.y() );
     _scene->addItem( _itemLadd );
 
-    _itemRoll = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_roll.svg" );
+    _itemRoll = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_roll.svg" );
     _itemRoll->setCacheMode( QGraphicsItem::NoCache );
     _itemRoll->setZValue( _rollZ );
     _itemRoll->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -469,7 +469,7 @@ void qfi_EADI::ADI::init( double scaleX, double scaleY )
     _itemRoll->moveBy( _scaleX * _originalRollPos.x(), _scaleY * _originalRollPos.y() );
     _scene->addItem( _itemRoll );
 
-    _itemSlip = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_slip.svg" );
+    _itemSlip = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_slip.svg" );
     _itemSlip->setCacheMode( QGraphicsItem::NoCache );
     _itemSlip->setZValue( _slipZ );
     _itemSlip->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -477,28 +477,28 @@ void qfi_EADI::ADI::init( double scaleX, double scaleY )
     _itemSlip->moveBy( _scaleX * _originalSlipPos.x(), _scaleY * _originalSlipPos.y() );
     _scene->addItem( _itemSlip );
 
-    _itemTurn = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_turn.svg" );
+    _itemTurn = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_turn.svg" );
     _itemTurn->setCacheMode( QGraphicsItem::NoCache );
     _itemTurn->setZValue( _turnZ );
     _itemTurn->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemTurn->moveBy( _scaleX * _originalTurnPos.x(), _scaleY * _originalTurnPos.y() );
     _scene->addItem( _itemTurn );
 
-    _itemDotH = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_doth.svg" );
+    _itemDotH = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_doth.svg" );
     _itemDotH->setCacheMode( QGraphicsItem::NoCache );
     _itemDotH->setZValue( _dotsZ - 1 );
     _itemDotH->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemDotH->moveBy( _scaleX * _originalDotHPos.x(), _scaleY * _originalDotHPos.y() );
     _scene->addItem( _itemDotH );
 
-    _itemDotV = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_dotv.svg" );
+    _itemDotV = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_dotv.svg" );
     _itemDotV->setCacheMode( QGraphicsItem::NoCache );
     _itemDotV->setZValue( _dotsZ - 1 );
     _itemDotV->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemDotV->moveBy( _scaleX * _originalDotVPos.x(), _scaleY * _originalDotVPos.y() );
     _scene->addItem( _itemDotV );
 
-    _itemFD = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_fd.svg" );
+    _itemFD = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_fd.svg" );
     _itemFD->setCacheMode( QGraphicsItem::NoCache );
     _itemFD->setZValue( _fdZ );
     _itemFD->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -506,41 +506,41 @@ void qfi_EADI::ADI::init( double scaleX, double scaleY )
     _itemFD->moveBy( _scaleX * _originalFdPos.x(), _scaleY * _originalFdPos.y() );
     _scene->addItem( _itemFD );
 
-    _itemStall = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_stall.svg" );
+    _itemStall = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_stall.svg" );
     _itemStall->setCacheMode( QGraphicsItem::NoCache );
     _itemStall->setZValue( _stallZ );
     _itemStall->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemStall->moveBy( _scaleX * _originalStallPos.x(), _scaleY * _originalStallPos.y() );
     _scene->addItem( _itemStall );
 
-    _itemScaleH = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_scaleh.svg" );
+    _itemScaleH = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_scaleh.svg" );
     _itemScaleH->setCacheMode( QGraphicsItem::NoCache );
     _itemScaleH->setZValue( _scalesZ );
     _itemScaleH->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemScaleH->moveBy( _scaleX * _originalScaleHPos.x(), _scaleY * _originalScaleHPos.y() );
     _scene->addItem( _itemScaleH );
 
-    _itemScaleV = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_scalev.svg" );
+    _itemScaleV = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_scalev.svg" );
     _itemScaleV->setCacheMode( QGraphicsItem::NoCache );
     _itemScaleV->setZValue( _scalesZ );
     _itemScaleV->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemScaleV->moveBy( _scaleX * _originalScaleVPos.x(), _scaleY * _originalScaleVPos.y() );
     _scene->addItem( _itemScaleV );
 
-    _itemMask = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_mask.svg" );
+    _itemMask = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_mask.svg" );
     _itemMask->setCacheMode( QGraphicsItem::NoCache );
     _itemMask->setZValue( _maskZ );
     _itemMask->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _scene->addItem( _itemMask );
 
-    _itemFPM = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_fpm.svg" );
+    _itemFPM = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_fpm.svg" );
     _itemFPM->setCacheMode( QGraphicsItem::NoCache );
     _itemFPM->setZValue( _fpmZ );
     _itemFPM->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemFPM->moveBy( _scaleX * _originalFpmPos.x(), _scaleY * _originalFpmPos.y() );
     _scene->addItem( _itemFPM );
 
-    _itemFPMX = new QGraphicsSvgItem( ":/images/eadi/eadi_adi_fpmx.svg" );
+    _itemFPMX = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_adi_fpmx.svg" );
     _itemFPMX->setCacheMode( QGraphicsItem::NoCache );
     _itemFPMX->setZValue( _fpmZ );
     _itemFPMX->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -1046,21 +1046,21 @@ void qfi_EADI::ALT::init( double scaleX, double scaleY )
 
     reset();
 
-    _itemBack = new QGraphicsSvgItem( ":/images/eadi/eadi_alt_back.svg" );
+    _itemBack = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_alt_back.svg" );
     _itemBack->setCacheMode( QGraphicsItem::NoCache );
     _itemBack->setZValue( _backZ );
     _itemBack->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemBack->moveBy( _scaleX * _originalBackPos.x(), _scaleY * _originalBackPos.y() );
     _scene->addItem( _itemBack );
 
-    _itemScale1 = new QGraphicsSvgItem( ":/images/eadi/eadi_alt_scale.svg" );
+    _itemScale1 = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_alt_scale.svg" );
     _itemScale1->setCacheMode( QGraphicsItem::NoCache );
     _itemScale1->setZValue( _scaleZ );
     _itemScale1->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemScale1->moveBy( _scaleX * _originalScale1Pos.x(), _scaleY * _originalScale1Pos.y() );
     _scene->addItem( _itemScale1 );
 
-    _itemScale2 = new QGraphicsSvgItem( ":/images/eadi/eadi_alt_scale.svg" );
+    _itemScale2 = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_alt_scale.svg" );
     _itemScale2->setCacheMode( QGraphicsItem::NoCache );
     _itemScale2->setZValue( _scaleZ );
     _itemScale2->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -1097,21 +1097,21 @@ void qfi_EADI::ALT::init( double scaleX, double scaleY )
                          _scaleY * ( _originalLabel3Y - _itemLabel3->boundingRect().height() / 2.0 ) );
     _scene->addItem( _itemLabel3 );
 
-    _itemGround = new QGraphicsSvgItem( ":/images/eadi/eadi_alt_ground.svg" );
+    _itemGround = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_alt_ground.svg" );
     _itemGround->setCacheMode( QGraphicsItem::NoCache );
     _itemGround->setZValue( _groundZ );
     _itemGround->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemGround->moveBy( _scaleX * _originalGroundPos.x(), _scaleY * _originalGroundPos.y() );
     _scene->addItem( _itemGround );
 
-    _itemBugAlt = new QGraphicsSvgItem( ":/images/eadi/eadi_alt_bug.svg" );
+    _itemBugAlt = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_alt_bug.svg" );
     _itemBugAlt->setCacheMode( QGraphicsItem::NoCache );
     _itemBugAlt->setZValue( _altBugZ );
     _itemBugAlt->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemBugAlt->moveBy( _scaleX * _originalFramePos.x(), _scaleY * _originalFramePos.y() );
     _scene->addItem( _itemBugAlt );
 
-    _itemFrame = new QGraphicsSvgItem( ":/images/eadi/eadi_alt_frame.svg" );
+    _itemFrame = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_alt_frame.svg" );
     _itemFrame->setCacheMode( QGraphicsItem::NoCache );
     _itemFrame->setZValue( _frameZ );
     _itemFrame->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -1455,21 +1455,21 @@ void qfi_EADI::ASI::init( double scaleX, double scaleY )
 
     reset();
 
-    _itemBack = new QGraphicsSvgItem( ":/images/eadi/eadi_asi_back.svg" );
+    _itemBack = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_asi_back.svg" );
     _itemBack->setCacheMode( QGraphicsItem::NoCache );
     _itemBack->setZValue( _backZ );
     _itemBack->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemBack->moveBy( _scaleX * _originalBackPos.x(), _scaleY * _originalBackPos.y() );
     _scene->addItem( _itemBack );
 
-    _itemScale1 = new QGraphicsSvgItem( ":/images/eadi/eadi_asi_scale.svg" );
+    _itemScale1 = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_asi_scale.svg" );
     _itemScale1->setCacheMode( QGraphicsItem::NoCache );
     _itemScale1->setZValue( _scaleZ );
     _itemScale1->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemScale1->moveBy( _scaleX * _originalScale1Pos.x(), _scaleY * _originalScale1Pos.y() );
     _scene->addItem( _itemScale1 );
 
-    _itemScale2 = new QGraphicsSvgItem( ":/images/eadi/eadi_asi_scale.svg" );
+    _itemScale2 = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_asi_scale.svg" );
     _itemScale2->setCacheMode( QGraphicsItem::NoCache );
     _itemScale2->setZValue( _scaleZ );
     _itemScale2->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -1546,14 +1546,14 @@ void qfi_EADI::ASI::init( double scaleX, double scaleY )
                          _scaleY * ( _originalLabel7Y - _itemLabel7->boundingRect().height() / 2.0 ) );
     _scene->addItem( _itemLabel7 );
 
-    _itemBugIAS = new QGraphicsSvgItem( ":/images/eadi/eadi_asi_bug.svg" );
+    _itemBugIAS = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_asi_bug.svg" );
     _itemBugIAS->setCacheMode( QGraphicsItem::NoCache );
     _itemBugIAS->setZValue( _iasBugZ );
     _itemBugIAS->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemBugIAS->moveBy( _scaleX * _originalFramePos.x(), _scaleY * _originalFramePos.y() );
     _scene->addItem( _itemBugIAS );
 
-    _itemFrame = new QGraphicsSvgItem( ":/images/eadi/eadi_asi_frame.svg" );
+    _itemFrame = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_asi_frame.svg" );
     _itemFrame->setCacheMode( QGraphicsItem::NoCache );
     _itemFrame->setZValue( _frameZ );
     _itemFrame->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -1567,7 +1567,7 @@ void qfi_EADI::ASI::init( double scaleX, double scaleY )
                                 _vfePen, _vfeBrush );
     _itemVfe->setZValue( _iasVfeZ );
 
-    _itemVne = new QGraphicsSvgItem( ":/images/eadi/eadi_asi_vne.svg" );
+    _itemVne = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_asi_vne.svg" );
     _itemVne->setCacheMode( QGraphicsItem::NoCache );
     _itemVne->setZValue( _iasVneZ );
     _itemVne->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -1957,14 +1957,14 @@ void qfi_EADI::HDG::init( double scaleX, double scaleY )
 
     reset();
 
-    _itemBack = new QGraphicsSvgItem( ":/images/eadi/eadi_hsi_back.svg" );
+    _itemBack = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_hsi_back.svg" );
     _itemBack->setCacheMode( QGraphicsItem::NoCache );
     _itemBack->setZValue( _backZ );
     _itemBack->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemBack->moveBy( _scaleX * _originalBackPos.x(), _scaleY * _originalBackPos.y() );
     _scene->addItem( _itemBack );
 
-    _itemFace = new QGraphicsSvgItem( ":/images/eadi/eadi_hsi_face.svg" );
+    _itemFace = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_hsi_face.svg" );
     _itemFace->setCacheMode( QGraphicsItem::NoCache );
     _itemFace->setZValue( _faceZ );
     _itemFace->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -1972,7 +1972,7 @@ void qfi_EADI::HDG::init( double scaleX, double scaleY )
     _itemFace->moveBy( _scaleX * _originalFacePos.x(), _scaleY * _originalFacePos.y() );
     _scene->addItem( _itemFace );
 
-    _itemHdgBug = new QGraphicsSvgItem( ":/images/eadi/eadi_hsi_bug.svg" );
+    _itemHdgBug = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_hsi_bug.svg" );
     _itemHdgBug->setCacheMode( QGraphicsItem::NoCache );
     _itemHdgBug->setZValue( _hdgBugZ );
     _itemHdgBug->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -1980,7 +1980,7 @@ void qfi_EADI::HDG::init( double scaleX, double scaleY )
     _itemHdgBug->moveBy( _scaleX * _originalFacePos.x(), _scaleY * _originalFacePos.y() );
     _scene->addItem( _itemHdgBug );
 
-    _itemMarks = new QGraphicsSvgItem( ":/images/eadi/eadi_hsi_marks.svg" );
+    _itemMarks = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_hsi_marks.svg" );
     _itemMarks->setCacheMode( QGraphicsItem::NoCache );
     _itemMarks->setZValue( _marksZ );
     _itemMarks->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
@@ -2096,7 +2096,7 @@ void qfi_EADI::VSI::init( double scaleX, double scaleY )
 
     reset();
 
-    _itemScale = new QGraphicsSvgItem( ":/images/eadi/eadi_vsi_scale.svg" );
+    _itemScale = new QGraphicsSvgItem( ":qfi/images/eadi/eadi_vsi_scale.svg" );
     _itemScale->setCacheMode( QGraphicsItem::NoCache );
     _itemScale->setZValue( _scaleZ );
     _itemScale->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );

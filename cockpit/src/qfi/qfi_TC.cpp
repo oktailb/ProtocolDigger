@@ -147,39 +147,39 @@ void qfi_TC::init()
 
     reset();
 
-    _itemBack = new QGraphicsSvgItem( ":/images/tc/tc_back.svg" );
+    _itemBack = new QGraphicsSvgItem( ":qfi/images/tc/tc_back.svg" );
     _itemBack->setCacheMode( QGraphicsItem::NoCache );
     _itemBack->setZValue( _backZ );
     _itemBack->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _scene->addItem( _itemBack );
 
-    _itemBall = new QGraphicsSvgItem( ":/images/tc/tc_ball.svg" );
+    _itemBall = new QGraphicsSvgItem( ":qfi/images/tc/tc_ball.svg" );
     _itemBall->setCacheMode( QGraphicsItem::NoCache );
     _itemBall->setZValue( _ballZ );
     _itemBall->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemBall->setTransformOriginPoint( _originalBallCtr );
     _scene->addItem( _itemBall );
 
-    _itemFace_1 = new QGraphicsSvgItem( ":/images/tc/tc_face_1.svg" );
+    _itemFace_1 = new QGraphicsSvgItem( ":qfi/images/tc/tc_face_1.svg" );
     _itemFace_1->setCacheMode( QGraphicsItem::NoCache );
     _itemFace_1->setZValue( _face1Z );
     _itemFace_1->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _scene->addItem( _itemFace_1 );
 
-    _itemFace_2 = new QGraphicsSvgItem( ":/images/tc/tc_face_2.svg" );
+    _itemFace_2 = new QGraphicsSvgItem( ":qfi/images/tc/tc_face_2.svg" );
     _itemFace_2->setCacheMode( QGraphicsItem::NoCache );
     _itemFace_2->setZValue( _face2Z );
     _itemFace_2->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _scene->addItem( _itemFace_2 );
 
-    _itemMark = new QGraphicsSvgItem( ":/images/tc/tc_mark.svg" );
+    _itemMark = new QGraphicsSvgItem( ":qfi/images/tc/tc_mark.svg" );
     _itemMark->setCacheMode( QGraphicsItem::NoCache );
     _itemMark->setZValue( _markZ );
     _itemMark->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemMark->setTransformOriginPoint( _originalMarkCtr );
     _scene->addItem( _itemMark );
 
-    _itemCase = new QGraphicsSvgItem( ":/images/tc/tc_case.svg" );
+    _itemCase = new QGraphicsSvgItem( ":qfi/images/tc/tc_case.svg" );
     _itemCase->setCacheMode( QGraphicsItem::NoCache );
     _itemCase->setZValue( _caseZ );
     _itemCase->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );

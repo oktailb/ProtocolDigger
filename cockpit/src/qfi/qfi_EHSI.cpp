@@ -231,74 +231,74 @@ void qfi_EHSI::init()
 
     reset();
 
-    _itemBack = new QGraphicsSvgItem( ":/images/ehsi/ehsi_back.svg" );
+    _itemBack = new QGraphicsSvgItem( ":qfi/images/ehsi/ehsi_back.svg" );
     _itemBack->setCacheMode( QGraphicsItem::NoCache );
     _itemBack->setZValue( _backZ );
     _itemBack->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _scene->addItem( _itemBack );
 
-    _itemMask = new QGraphicsSvgItem( ":/images/ehsi/ehsi_mask.svg" );
+    _itemMask = new QGraphicsSvgItem( ":qfi/images/ehsi/ehsi_mask.svg" );
     _itemMask->setCacheMode( QGraphicsItem::NoCache );
     _itemMask->setZValue( _maskZ );
     _itemMask->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _scene->addItem( _itemMask );
 
-    _itemMark = new QGraphicsSvgItem( ":/images/ehsi/ehsi_mark.svg" );
+    _itemMark = new QGraphicsSvgItem( ":qfi/images/ehsi/ehsi_mark.svg" );
     _itemMark->setCacheMode( QGraphicsItem::NoCache );
     _itemMark->setZValue( _markZ );
     _itemMark->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _scene->addItem( _itemMark );
 
-    _itemBrgArrow = new QGraphicsSvgItem( ":/images/ehsi/ehsi_brg_arrow.svg" );
+    _itemBrgArrow = new QGraphicsSvgItem( ":qfi/images/ehsi/ehsi_brg_arrow.svg" );
     _itemBrgArrow->setCacheMode( QGraphicsItem::NoCache );
     _itemBrgArrow->setZValue( _brgArrowZ );
     _itemBrgArrow->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemBrgArrow->setTransformOriginPoint( _originalNavCtr );
     _scene->addItem( _itemBrgArrow );
 
-    _itemCrsArrow = new QGraphicsSvgItem( ":/images/ehsi/ehsi_crs_arrow.svg" );
+    _itemCrsArrow = new QGraphicsSvgItem( ":qfi/images/ehsi/ehsi_crs_arrow.svg" );
     _itemCrsArrow->setCacheMode( QGraphicsItem::NoCache );
     _itemCrsArrow->setZValue( _crsArrowZ );
     _itemCrsArrow->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemCrsArrow->setTransformOriginPoint( _originalNavCtr );
     _scene->addItem( _itemCrsArrow );
 
-    _itemDevBar = new QGraphicsSvgItem( ":/images/ehsi/ehsi_dev_bar.svg" );
+    _itemDevBar = new QGraphicsSvgItem( ":qfi/images/ehsi/ehsi_dev_bar.svg" );
     _itemDevBar->setCacheMode( QGraphicsItem::NoCache );
     _itemDevBar->setZValue( _devBarZ );
     _itemDevBar->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemDevBar->setTransformOriginPoint( _originalNavCtr );
     _scene->addItem( _itemDevBar );
 
-    _itemDevScale = new QGraphicsSvgItem( ":/images/ehsi/ehsi_dev_scale.svg" );
+    _itemDevScale = new QGraphicsSvgItem( ":qfi/images/ehsi/ehsi_dev_scale.svg" );
     _itemDevScale->setCacheMode( QGraphicsItem::NoCache );
     _itemDevScale->setZValue( _devScaleZ );
     _itemDevScale->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemDevScale->setTransformOriginPoint( _originalNavCtr );
     _scene->addItem( _itemDevScale );
 
-    _itemHdgBug = new QGraphicsSvgItem( ":/images/ehsi/ehsi_hdg_bug.svg" );
+    _itemHdgBug = new QGraphicsSvgItem( ":qfi/images/ehsi/ehsi_hdg_bug.svg" );
     _itemHdgBug->setCacheMode( QGraphicsItem::NoCache );
     _itemHdgBug->setZValue( _hdgBugZ );
     _itemHdgBug->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemHdgBug->setTransformOriginPoint( _originalNavCtr );
     _scene->addItem( _itemHdgBug );
 
-    _itemHdgScale = new QGraphicsSvgItem( ":/images/ehsi/ehsi_hdg_scale.svg" );
+    _itemHdgScale = new QGraphicsSvgItem( ":qfi/images/ehsi/ehsi_hdg_scale.svg" );
     _itemHdgScale->setCacheMode( QGraphicsItem::NoCache );
     _itemHdgScale->setZValue( _hdgScaleZ );
     _itemHdgScale->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemHdgScale->setTransformOriginPoint( _originalNavCtr );
     _scene->addItem( _itemHdgScale );
 
-    _itemCdiTo = new QGraphicsSvgItem( ":/images/ehsi/ehsi_cdi_to.svg" );
+    _itemCdiTo = new QGraphicsSvgItem( ":qfi/images/ehsi/ehsi_cdi_to.svg" );
     _itemCdiTo->setCacheMode( QGraphicsItem::NoCache );
     _itemCdiTo->setZValue( _crsArrowZ );
     _itemCdiTo->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemCdiTo->setTransformOriginPoint( _originalNavCtr );
     _scene->addItem( _itemCdiTo );
 
-    _itemCdiFrom = new QGraphicsSvgItem( ":/images/ehsi/ehsi_cdi_from.svg" );
+    _itemCdiFrom = new QGraphicsSvgItem( ":qfi/images/ehsi/ehsi_cdi_from.svg" );
     _itemCdiFrom->setCacheMode( QGraphicsItem::NoCache );
     _itemCdiFrom->setZValue( _crsArrowZ );
     _itemCdiFrom->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );

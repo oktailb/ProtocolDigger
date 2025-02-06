@@ -152,28 +152,28 @@ void qfi_AI::init()
 
     reset();
 
-    _itemBack = new QGraphicsSvgItem( ":/images/ai/ai_back.svg" );
+    _itemBack = new QGraphicsSvgItem( ":qfi/images/ai/ai_back.svg" );
     _itemBack->setCacheMode( QGraphicsItem::NoCache );
     _itemBack->setZValue( _backZ );
     _itemBack->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemBack->setTransformOriginPoint( _originalAdiCtr );
     _scene->addItem( _itemBack );
 
-    _itemFace = new QGraphicsSvgItem( ":/images/ai/ai_face.svg" );
+    _itemFace = new QGraphicsSvgItem( ":qfi/images/ai/ai_face.svg" );
     _itemFace->setCacheMode( QGraphicsItem::NoCache );
     _itemFace->setZValue( _faceZ );
     _itemFace->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemFace->setTransformOriginPoint( _originalAdiCtr );
     _scene->addItem( _itemFace );
 
-    _itemRing = new QGraphicsSvgItem( ":/images/ai/ai_ring.svg" );
+    _itemRing = new QGraphicsSvgItem( ":qfi/images/ai/ai_ring.svg" );
     _itemRing->setCacheMode( QGraphicsItem::NoCache );
     _itemRing->setZValue( _ringZ );
     _itemRing->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
     _itemRing->setTransformOriginPoint( _originalAdiCtr );
     _scene->addItem( _itemRing );
 
-    _itemCase = new QGraphicsSvgItem( ":/images/ai/ai_case.svg" );
+    _itemCase = new QGraphicsSvgItem( ":qfi/images/ai/ai_case.svg" );
     _itemCase->setCacheMode( QGraphicsItem::NoCache );
     _itemCase->setZValue( _caseZ );
     _itemCase->setTransform( QTransform::fromScale( _scaleX, _scaleY ), true );
