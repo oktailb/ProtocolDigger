@@ -57,6 +57,20 @@ jobs:
       run: |
         sudo apt-get -y install qt6-base-dev qt6-base-dev-tools qt6-charts-dev qt6-svg-dev libxkbcommon-dev
 
+    - name: Install Qt for windows
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.7.*'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
+        install-deps: 'true'
+        modules: 'qtcharts qtsvg'
+        archives: 'qtbase qtsvg'
+        tools: 'tools_ifw tools_qtcreator,qt.tools.qtcreator'
+        set-env: 'true'
+        tools-only: 'false'
+
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
