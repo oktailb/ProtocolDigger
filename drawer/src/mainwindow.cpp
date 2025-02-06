@@ -544,7 +544,10 @@ void DebugWindow::updateChart(std::string name)
             {
                 ui->dataAsText->setVisible(false);
                 if (serie->count() > 1)
-                    status += currentName + ": " + QString::number(serie->at(serie->count() - 1).y(), 'g', 6).toStdString() + " ";
+                    status += QString::fromStdString(currentName)
+                              + ": "
+                              + QString::number(serie->at(serie->count() - 1).y(), 'g', 6)
+                              + " ";
             }
         }
     }
