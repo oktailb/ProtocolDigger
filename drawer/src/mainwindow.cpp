@@ -811,7 +811,7 @@ void DebugWindow::on_applyButton_clicked()
     QString out = "";
 
     out += "0x" + QString::number(offset, 16) + ",";
-    out += intDataType.at(type) + ",";
+    out += QString::fromStdString(intDataType.at(type)) + ",";
     switch (type)
     {
     case DataType::e_string:
