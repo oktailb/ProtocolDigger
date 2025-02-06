@@ -822,7 +822,7 @@ void DebugWindow::on_applyButton_clicked()
     }
     default:
     {
-        out += intDataSize.at(size) + ",";
+        out += QString::fromStdString(intDataSize.at(size)) + ",";
         out += QString(toHostEndian?"host":"network") + ",";
         out += "0x" + QString::number(mask, 16) + ",";
         out += QString::number(shift) + ",";
