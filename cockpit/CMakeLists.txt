@@ -89,8 +89,6 @@ target_include_directories(qfi PUBLIC
 )
 
 qt6_add_resources(qfi "images"
-    PREFIX
-        ""
     FILES
     images/vsi/vsi.svg
     images/vsi/vsi_hand.svg
