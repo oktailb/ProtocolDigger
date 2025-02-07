@@ -42,6 +42,19 @@ qt_add_executable(${PROJECT_NAME}
     ${${PROJECT_NAME}_INCLUDE}
 )
 
+qt6_add_resources(${PROJECT_NAME} "images"
+    PREFIX "drawer"
+    FILES
+    play.png
+    pause.png
+    stop.png
+    fforward.png
+    power.png
+    plus.png
+    minus.png
+    license.txt
+)
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE

@@ -53,6 +53,8 @@ private slots:
 
     void on_actiondata_listing_triggered(bool checked);
 
+    void on_actionLicence_triggered();
+
 private:
     Ui::DebugWindow *ui;
     void fillVariables(std::map<std::string, varDef_t> &variables);

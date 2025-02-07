@@ -8,6 +8,7 @@
 #include <stdfloat>
 #include <netinet/in.h>
 #include <QtGui>
+#include <QMessageBox>
 
 long double mylog2(long double number ) {
     return log( number ) / log( 2 ) ;
@@ -84,6 +85,11 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     ui->hexdump->setVisible(false);
     ui->dataAsText->setVisible(false);
     currentPoint = QPointF(0, 0);
+    if (configuration.find("Input/video") == configuration.end())
+    {
+        ui->Play->setVisible(false);
+        ui->Pause->setVisible(false);
+    }
     ready = true;
 }
 
@@ -1085,9 +1091,25 @@ void DebugWindow::on_actionhexdump_triggered(bool checked)
     ui->hexdump->setVisible(checked);
 }
 
-
 void DebugWindow::on_actiondata_listing_triggered(bool checked)
 {
     ui->dataAsText->setVisible(checked);
+}
+
+void DebugWindow::on_actionLicence_triggered()
+{
+    QString data;
+    QString fileName(":drawer/license.txt");
+
+    QFile file(fileName);
+    file.open(QFile::ReadOnly);
+    data = file.readAll();
+
+    file.close();
+
+    QMessageBox msgBox;
+    msgBox.setFixedWidth(850);
+    msgBox.setText(data);
+    msgBox.exec();
 }
 

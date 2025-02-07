@@ -466,6 +466,47 @@
      </widget>
     </item>
     <item>
+     <layout class="QHBoxLayout" name="MediaButtons">
+      <item>
+       <widget class="QPushButton" name="Play">
+        <property name="text">
+         <string>Play</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normalon>:/drawer/play.png</normalon>
+         </iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="Pause">
+        <property name="text">
+         <string>Pause</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normalon>:/drawer/pause.png</normalon>
+         </iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="spacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="DataSearch">
       <property name="spacing">
        <number>6</number>
