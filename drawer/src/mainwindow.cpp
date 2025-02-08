@@ -4,6 +4,7 @@
 #include "ui_mainwindow.h"
 #include "variables.h"
 #include "configuration.h"
+#include <charconv>
 #include <stdint.h>
 #include <stdfloat>
 #include <netinet/in.h>
@@ -66,7 +67,8 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     chart->setAnimationDuration(0);
     chart->createDefaultAxes();
     ui->chart->setChart(chart);
-    timeWindowSize = std::stof(configuration.at("Input/timeWindowSize"));
+    std::string stimeWindowSize = configuration.at("Input/timeWindowSize");
+    std::from_chars(stimeWindowSize.c_str(), stimeWindowSize.c_str() + stimeWindowSize.size(), timeWindowSize);
     uint64_t tsSecRef = queue.data()[0]->ts.tv_sec;
     uint64_t tsSecMax = queue.data()[queue.data().size() - 1]->ts.tv_sec;
     uint64_t tsDuration = tsSecMax - tsSecRef;
@@ -268,10 +270,16 @@ bool DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
         {
             uint64_t tmp = 0;
             char * tmpStr = (char *)malloc(len + 1);
+            char * tmpStrBkp = tmpStr;
+            uint32_t lenBkp = len;
             strncpy(tmpStr, (char *)mapper + offset, len);
             tmpStr[len] = '\0';
             try {
-                tmp = std::stoi(tmpStr);
+                while (*tmpStr == '0') {
+                    tmpStr++;
+                    len--;
+                }
+                std::from_chars(tmpStr, tmpStr + len, tmp);
             } catch (...) {
                 std::cerr << offset << " : " << tmpStr << " -> 0x";
                 uint32_t i = 0;
@@ -280,7 +288,8 @@ bool DebugWindow::SeriesFromOffset(uint32_t offset, uint32_t size, uint32_t len,
                 std::cerr << std::endl;
             }
             serie->append(timestamp, tmp);
-            free (tmpStr);
+            len = lenBkp;
+            free (tmpStrBkp);
             break;
         }
         default:

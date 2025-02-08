@@ -3,6 +3,7 @@
 #include "defs.h"
 #include "variables.h"
 #include "pCapUtils.h"
+#include <charconv>
 #include <cstring>
 #include <thread>
 #include <unistd.h>
@@ -41,12 +42,17 @@ int main(int argc, char ** argv)
     extractVariablesFromConfiguration(configuration, variables);
 
     std::string FDMaddress = configuration["Input/FDMaddress"];
-    uint64_t packetLen = std::stoi(configuration["Input/packetLen"]);
+    std::string spacketLen = configuration["Input/packetLen"];
+    uint16_t packetLen = 0;
+    std::from_chars(spacketLen.c_str(), spacketLen.c_str() + spacketLen.size(), packetLen);
 
     init(configuration, queue);
 
     std::vector<std::string> FDMtokens = split(FDMaddress, ':');
-    int sockfd = configureSocket(FDMtokens[0], std::stoi(FDMtokens[1]), packetLen, false, &server_addr);
+    std::string sport = FDMtokens[1];
+    uint16_t port = 0;
+    std::from_chars(sport.c_str(), sport.c_str() + sport.size(), port);
+    int sockfd = configureSocket(FDMtokens[0], port, packetLen, false, &server_addr);
     run(sockfd);
 }
 

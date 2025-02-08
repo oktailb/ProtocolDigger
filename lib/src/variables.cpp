@@ -1,5 +1,6 @@
 #include "variables.h"
 #include <algorithm>
+#include <charconv>
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -43,8 +44,9 @@ void extractVariablesFromConfiguration(std::map<std::string, std::string> &confi
         {
             std::string name = tokensVar[1];
             std::vector<std::string> tokensVal = split(var.second, ',');
-            tolower(tokensVal[ConfigFields::e_offset]);
-            uint32_t offset = std::stoi(tokensVal[ConfigFields::e_offset], 0, 16);
+            std::string soffset = tokensVal[ConfigFields::e_offset];
+            uint32_t offset = 0;
+            std::from_chars(soffset.c_str() + 2, soffset.c_str() + soffset.size(), offset, 16);
             DataType type = stringDataType.at(tokensVal[ConfigFields::e_type]);
             DataSize size = DataSize::e_custom;
             uint32_t len = 0;
@@ -59,7 +61,8 @@ void extractVariablesFromConfiguration(std::map<std::string, std::string> &confi
             case DataType::e_sint:
             case DataType::e_string:
             {
-                len  = std::stoi(tokensVal[ConfigFields::e_size]);
+                std::string slen = tokensVal[ConfigFields::e_size];
+                std::from_chars(slen.c_str(), slen.c_str() + slen.size(), len);
                 if (tokensVal.size() > ConfigFields::e_mask)
                     custom = tokensVal[ConfigFields::e_mask];
                 break;
@@ -67,10 +70,12 @@ void extractVariablesFromConfiguration(std::map<std::string, std::string> &confi
             default:
             {
                 size  = stringDataSize.at(tokensVal[ConfigFields::e_size]);
-                tolower(tokensVal[ConfigFields::e_mask]);
-                mask = std::stoul((tokensVal[ConfigFields::e_mask]), 0, 16);
-                rshift = std::stoi(tokensVal[ConfigFields::e_rshift]);
-                ratio = std::stof(tokensVal[ConfigFields::e_ratio]);
+                std::string smask = (tokensVal[ConfigFields::e_mask]);
+                std::from_chars(smask.c_str() + 2, smask.c_str() + smask.size(), mask, 16);
+                std::string srshift = tokensVal[ConfigFields::e_rshift];
+                std::from_chars(srshift.c_str(), srshift.c_str() + srshift.size(), rshift);
+                std::string sratio = tokensVal[ConfigFields::e_ratio];
+                std::from_chars(sratio.c_str(), sratio.c_str() + sratio.size(), ratio);
                 endian = stringDataEndian.at(tokensVal[ConfigFields::e_endian]);
                 if (tokensVal.size() > ConfigFields::e_customStr)
                     custom = tokensVal[ConfigFields::e_customStr];
