@@ -1114,7 +1114,7 @@ void DebugWindow::displayPlotValue(const QPointF &point, bool state)
     }
     if (videoDialogWindow != nullptr)
     {
-        videoDialogWindow->goTo(value * 1000);
+        videoDialogWindow->goTo(point.x() * 1000);
     }
 }
 

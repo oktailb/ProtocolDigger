@@ -41,7 +41,7 @@ void videoDialog::closeEvent(QCloseEvent *e)
     delete layout;
 }
 
-void videoDialog::goTo(uint64_t ts)
+void videoDialog::goTo(int64_t ts)
 {
     player->setPosition(ts);
     std::this_thread::sleep_for(std::chrono::milliseconds(10));

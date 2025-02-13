@@ -15,7 +15,7 @@ public:
 
     void playVideo(const QString &fileName);
 
-    void goTo(uint64_t ts);
+    void goTo(int64_t ts);
     void play();
     void pause();
     void stop();
