@@ -7,6 +7,7 @@
 #include "variables.h"
 #include "ThreadSafeQueue.h"
 #include "callout.h"
+#include "videoDialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -23,8 +24,9 @@ public:
     ~DebugWindow();
 
 protected:
-    void timerEvent(QTimerEvent *event);
-    void wheelEvent(QWheelEvent *event);
+    void timerEvent(QTimerEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
+    void closeEvent(QCloseEvent *e) override;
 
 private slots:
     void on_variables_currentIndexChanged(int index);
@@ -54,6 +56,10 @@ private slots:
     void on_actiondata_listing_triggered(bool checked);
 
     void on_actionLicence_triggered();
+
+    void on_Play_clicked();
+
+    void on_Pause_clicked();
 
 private:
     Ui::DebugWindow *ui;
@@ -86,7 +92,7 @@ private:
     Callout *m_tooltip;
     QList<Callout *> m_callouts;
     QPointF currentPoint;
-
+    videoDialog * videoDialogWindow;
     void showHexdump();
     void showDataAsText(std::vector<double> values);
 };

@@ -15,6 +15,8 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Gui)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Charts)
+find_package(Qt6 REQUIRED COMPONENTS Multimedia)
+find_package(Qt6 REQUIRED COMPONENTS MultimediaWidgets)
 
 set (${PROJECT_NAME}_SRC
     src/main.cpp
@@ -22,6 +24,7 @@ set (${PROJECT_NAME}_SRC
     src/chartview.cpp
     src/chart.cpp
     src/callout.cpp
+    src/videoDialog.cpp
 )
 
 set (${PROJECT_NAME}_UI
@@ -34,6 +37,7 @@ set (${PROJECT_NAME}_INCLUDE
     include/chart.h
     include/checklist.h
     include/callout.h
+    include/videoDialog.h
 )
 
 qt_add_executable(${PROJECT_NAME}
@@ -61,10 +65,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
-    Qt6::Core
-    Qt6::Gui
-    Qt6::Widgets
-    Qt6::Charts
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Gui
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Charts
+    Qt${QT_VERSION_MAJOR}::Multimedia
+    Qt${QT_VERSION_MAJOR}::MultimediaWidgets
     Sinvi
 )
 

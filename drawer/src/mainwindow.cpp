@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <QtGui>
 #include <QMessageBox>
+#include "videoDialog.h"
 
 long double mylog2(long double number ) {
     return log( number ) / log( 2 ) ;
@@ -91,6 +92,14 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     {
         ui->Play->setVisible(false);
         ui->Pause->setVisible(false);
+        videoDialogWindow = nullptr;
+    }
+    else
+    {
+        videoDialogWindow = new videoDialog();
+        videoDialogWindow->playVideo(configuration.at("Input/video").c_str());
+        videoDialogWindow->play();
+        videoDialogWindow->pause();
     }
     ready = true;
 }
@@ -105,8 +114,19 @@ void DebugWindow::fillVariables(std::map<std::string, varDef_t> &variablesList)
         ui->size->insertItem(ui->size->count() + 1, QString(type.first.c_str()), type.second);
 }
 
+
+void DebugWindow::closeEvent(QCloseEvent *e)
+{
+    Q_UNUSED(e);
+    if (videoDialogWindow != nullptr)
+        videoDialogWindow->close();
+}
+
+
 DebugWindow::~DebugWindow()
 {
+    if (videoDialogWindow != nullptr)
+        videoDialogWindow->close();
     killTimer(timerId);
     delete ui;
 }
@@ -1092,7 +1112,10 @@ void DebugWindow::displayPlotValue(const QPointF &point, bool state)
     } else {
         m_tooltip->hide();
     }
-
+    if (videoDialogWindow != nullptr)
+    {
+        videoDialogWindow->goTo(value * 1000);
+    }
 }
 
 void DebugWindow::on_actionhexdump_triggered(bool checked)
@@ -1120,5 +1143,19 @@ void DebugWindow::on_actionLicence_triggered()
     msgBox.setFixedWidth(850);
     msgBox.setText(data);
     msgBox.exec();
+}
+
+
+void DebugWindow::on_Play_clicked()
+{
+    if (videoDialogWindow != nullptr)
+        videoDialogWindow->play();
+}
+
+
+void DebugWindow::on_Pause_clicked()
+{
+    if (videoDialogWindow != nullptr)
+        videoDialogWindow->pause();
 }
 
