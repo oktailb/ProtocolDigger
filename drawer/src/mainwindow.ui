@@ -707,6 +707,9 @@
     <addaction name="actionSpy_Device"/>
     <addaction name="actionOpen_UDP_Socket"/>
     <addaction name="separator"/>
+    <addaction name="actionStart"/>
+    <addaction name="actionStop"/>
+    <addaction name="separator"/>
     <addaction name="actionSave_Configuration"/>
     <addaction name="actionExport"/>
     <addaction name="separator"/>
@@ -719,6 +722,8 @@
     <addaction name="actionFix_chart_range"/>
     <addaction name="actionhexdump"/>
     <addaction name="actiondata_listing"/>
+    <addaction name="separator"/>
+    <addaction name="actionSet_time_window"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -733,8 +738,6 @@
     </property>
     <addaction name="actionStream_to_external"/>
     <addaction name="actionServer_mode"/>
-    <addaction name="actionSet_PCAP_filter"/>
-    <addaction name="actionSelect_network_device"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -829,6 +832,21 @@
    </property>
    <property name="text">
     <string>data listing</string>
+   </property>
+  </action>
+  <action name="actionStart">
+   <property name="text">
+    <string>Start</string>
+   </property>
+  </action>
+  <action name="actionStop">
+   <property name="text">
+    <string>Stop</string>
+   </property>
+  </action>
+  <action name="actionSet_time_window">
+   <property name="text">
+    <string>Set time window</string>
    </property>
   </action>
  </widget>

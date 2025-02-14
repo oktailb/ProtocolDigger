@@ -1,6 +1,8 @@
 #include "include/mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "netSocketDialog.h"
 #include "pCapUtils.h"
+#include "qfiledialog.h"
 #include "ui_mainwindow.h"
 #include "variables.h"
 #include "configuration.h"
@@ -10,7 +12,13 @@
 #include <netinet/in.h>
 #include <QtGui>
 #include <QMessageBox>
+#include <net/if.h>
+#include <ifaddrs.h>
+
 #include "videoDialog.h"
+#include "netSpyDialog.h"
+#include "netSocketDialog.h"
+#include "pCapUtils.h"
 
 long double mylog2(long double number ) {
     return log( number ) / log( 2 ) ;
@@ -46,12 +54,18 @@ DebugWindow::DebugWindow(std::map<std::string, std::string> &configuration, Thre
     , ui(new Ui::DebugWindow)
     , queue(queue)
     , queueData(queue.data())
-    , timerId(0)
     , packetSize(0)
-    , configuration(configuration)
+    , timerId(0)
     , ready(false)
     , offsetChange(false)
     , formatChange(false)
+    , localFileMode(false)
+    , spyMode(false)
+    , socketMode(false)
+    , otherClient(false)
+    , relay(false)
+    , serverMode(false)
+    , configuration(configuration)
 {
     extractVariablesFromConfiguration(configuration, variables);
     chart = new QChart();
@@ -1145,7 +1159,6 @@ void DebugWindow::on_actionLicence_triggered()
     msgBox.exec();
 }
 
-
 void DebugWindow::on_Play_clicked()
 {
     if (videoDialogWindow != nullptr)
@@ -1157,5 +1170,105 @@ void DebugWindow::on_Pause_clicked()
 {
     if (videoDialogWindow != nullptr)
         videoDialogWindow->pause();
+}
+
+void DebugWindow::on_actionOpenPcap_triggered()
+{
+    QFileDialog qfd;
+    qfd.setFilter(QDir::Filter::TypeMask);
+    qfd.setNameFilter("*.pcap");
+    qfd.exec();
+
+    QStringList res = qfd.selectedFiles();
+    if (res.size() > 0)
+    {
+        localFileMode = true;
+        pcapFile = res[0];
+    }
+}
+
+void DebugWindow::on_actionSpy_Device_triggered()
+{
+    struct ifaddrs *addrs;
+    struct ifaddrs *tmp;
+    QStringList ifnames;
+
+    getifaddrs(&addrs);
+    tmp = addrs;
+
+    while (tmp)
+    {
+        if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_PACKET)
+            ifnames.append(tmp->ifa_name);
+
+        tmp = tmp->ifa_next;
+    }
+
+    freeifaddrs(addrs);
+
+    netSpyDialog spyDiag(ifnames);
+    spyDiag.exec();
+    if (spyDiag.result())
+    {
+        spyMode = true;
+        netDevice = spyDiag.getDeviceName();
+        netFilter = spyDiag.getFilter();
+    }
+}
+
+
+void DebugWindow::on_actionOpen_UDP_Socket_triggered()
+{
+    netSocketDialog spyDiag;
+    spyDiag.exec();
+    if (spyDiag.result())
+    {
+        socketMode = true;
+        socketAddr = spyDiag.getAddress();
+        socketPort = spyDiag.getPort();
+    }
+}
+
+
+void DebugWindow::on_actionStart_triggered()
+{
+    if (localFileMode)
+    {
+        if (relay)
+        {
+            read_pcap_file(pcapFile.toStdString(), netFilter.toStdString(), queue);
+            std::thread server_thread(sendPcapTo, socketAddr.toStdString(), socketPort, std::ref(queue), packetSize, serverMode);
+
+            if (!otherClient)
+            {
+                server_thread.detach();
+                socketMode = true;
+            }
+            else
+                server_thread.join();
+        }
+        else
+            read_pcap_file(netDevice.toStdString(), netFilter.toStdString(), queue);
+    }
+    if (spyMode)
+    {
+        std::thread reader_thread(read_device, netDevice.toStdString(), netFilter.toStdString(), std::ref(queue));
+        reader_thread.detach();
+    }
+    if (socketMode)
+    {
+        std::thread reader_thread(read_socket, socketAddr.toStdString(), socketPort, std::ref(queue), packetSize, serverMode);
+        reader_thread.detach();
+    }
+}
+
+void DebugWindow::on_actionStream_to_external_triggered(bool checked)
+{
+    otherClient = checked;
+}
+
+void DebugWindow::on_actionServer_mode_triggered(bool checked)
+{
+    serverMode = checked;
 }
 

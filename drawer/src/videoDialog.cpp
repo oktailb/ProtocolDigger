@@ -4,6 +4,12 @@
 videoDialog::videoDialog(QWidget *parent) :
     QDialog(parent)
 {
+    player = new QMediaPlayer;
+    videoWidget=new QVideoWidget;
+    layout = new QVBoxLayout;
+    layout->addWidget(videoWidget);
+    player->setVideoOutput(videoWidget) ;
+    setLayout(layout);
 }
 
 videoDialog::~videoDialog()
@@ -15,12 +21,6 @@ videoDialog::~videoDialog()
 
 void videoDialog::playVideo(const QString &fileName)
 {
-    player = new QMediaPlayer;
-    videoWidget=new QVideoWidget;
-    layout = new QVBoxLayout;
-    layout->addWidget(videoWidget);
-    player->setVideoOutput(videoWidget) ;
-    setLayout(layout);
 #if QT_VERSION > QT_VERSION_CHECK(6, 0, 0)
     player->setSource(fileName);
 #else

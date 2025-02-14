@@ -25,6 +25,8 @@ set (${PROJECT_NAME}_SRC
     src/chart.cpp
     src/callout.cpp
     src/videoDialog.cpp
+    src/netSpyDialog.cpp
+    src/netSocketDialog.cpp
 )
 
 set (${PROJECT_NAME}_UI
@@ -38,6 +40,8 @@ set (${PROJECT_NAME}_INCLUDE
     include/checklist.h
     include/callout.h
     include/videoDialog.h
+    include/netSpyDialog.h
+    include/netSocketDialog.h
 )
 
 qt_add_executable(${PROJECT_NAME}
