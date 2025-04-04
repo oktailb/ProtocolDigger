@@ -1,4 +1,4 @@
-# Sinvi
+# Protocol Digger
  Reverse engineering toolbox for fixed size protocol messages.
  
  Allows to switch from binary manual sinking
